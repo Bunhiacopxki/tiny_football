@@ -39,6 +39,8 @@ class Dot
 		//Shows the dot on the screen
 		void render(LTexture& gDotTexture);
 
+        //Dot's collision box
+		SDL_Rect mCollider;
     private:
 		//The X and Y offsets of the dot
 		int mPosX, mPosY;
@@ -67,6 +69,10 @@ Dot::Dot(bool isMainDot)
     mVelX = 0;
     mVelY = 0;
 	mIsMainDot = isMainDot;
+
+    //Set collision box dimension
+	mCollider.w = DOT_WIDTH;
+	mCollider.h = DOT_HEIGHT;
 }
 
 void Dot::handleEvent( SDL_Event& e )
@@ -118,10 +124,18 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots)
         // Cập nhật vị trí của main dot theo điều khiển
         mPosX += mVelX;
         mPosY += mVelY;
-
+        mCollider.x = mPosX;
+        mCollider.y = mPosY;
+        
         // Kiểm tra va chạm biên
-        if ((mPosX < 0) || (mPosX + DOT_WIDTH > SCREEN_WIDTH)) mPosX -= mVelX;
-        if ((mPosY < 0) || (mPosY + DOT_HEIGHT > SCREEN_HEIGHT)) mPosY -= mVelY;
+        if ((mPosX < 0) || (mPosX + DOT_WIDTH > SCREEN_WIDTH)){
+            mPosX -= mVelX;
+            mCollider.x = mPosX;
+        }
+        if ((mPosY < 0) || (mPosY + DOT_HEIGHT > SCREEN_HEIGHT)){
+            mPosY -= mVelY;
+            mCollider.y = mPosY;
+        }
     }
     else
     {
@@ -145,6 +159,18 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots)
 
 			mPosX += mVelX * 0.9;
 			mPosY += mVelY * 0.9;
+            mCollider.x = mPosX;
+            mCollider.y = mPosY;
+            
+            // Kiểm tra va chạm biên
+            if ((mPosX < 0) || (mPosX + DOT_WIDTH > SCREEN_WIDTH)){
+                mPosX -= mVelX;
+                mCollider.x = mPosX;
+            }
+            if ((mPosY < 0) || (mPosY + DOT_HEIGHT > SCREEN_HEIGHT)){
+                mPosY -= mVelY;
+                mCollider.y = mPosY;
+            }
 
         }
         else if (distance > RANGE) {
