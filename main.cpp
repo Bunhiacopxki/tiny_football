@@ -91,14 +91,23 @@ int main( int argc, char* args[] )
 			// Ball
 			Ball ball;
 
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				dots.push_back(Dot(false));
 			}
 
+			int randomIndex = rand() % dots.size();
+			dots[randomIndex].setGoalKeeper();
+
+			Uint32 lastTime = SDL_GetTicks();
+			double deltaTime = 0.0;
+
 			//While application is running
 			while( !quit )
 			{
+				Uint32 currentTime = SDL_GetTicks();
+				deltaTime = (currentTime - lastTime) / 1000.0;
+				lastTime = currentTime;
 				//Handle events on queue
 				while( SDL_PollEvent( &e ) != 0 )
 				{
@@ -113,10 +122,10 @@ int main( int argc, char* args[] )
 				}
 
 				//Move the dot
-				mainDot.move(mainDot, dots);
+				mainDot.move(mainDot, dots, deltaTime);
 				for (auto &dot : dots)
 				{
-					dot.move(mainDot, dots);
+					dot.move(mainDot, dots, deltaTime);
 				}
 				// Move the ball
 				ball.move();
