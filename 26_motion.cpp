@@ -2,6 +2,7 @@
 and may not be redistributed without written permission.*/
 
 //Using SDL, SDL_image, standard IO, and strings
+#define SDL_MAIN_HANDLED            	
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdio.h>

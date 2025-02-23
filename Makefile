@@ -5,20 +5,20 @@ OBJS = 26_motion.cpp
 CC = g++
 
 #INCLUDE_PATHS specifies the additional include paths we'll need
-INCLUDE_PATHS = -ID:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdl\include\SDL2 \
-				-ID:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sld_image\include\SDL2 \
-				-ID:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdll_ttf\include\SDL2 \
-				-ID:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdl_mixer\include\SDL2
+INCLUDE_PATHS = -ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdl\include\SDL2 \
+				-ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sld_image\include\SDL2 \
+				-ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdll_ttf\include\SDL2 \
+				-ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdl_mixer\include\SDL2
 
 #LIBRARY_PATHS specifies the additional library paths we'll need
-LIBRARY_PATHS = -LD:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdl\lib \
-				-LD:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sld_image\lib \
-				-LD:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdll_ttf\lib \
-				-LD:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdl_mixer\lib
+LIBRARY_PATHS = -LD:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdl\lib \
+				-LD:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sld_image\lib \
+				-LD:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdll_ttf\lib \
+				-LD:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdl_mixer\lib
 
 #COMPILER_FLAGS specifies the additional compilation options we're using
-# -w suppresses all warnings
-# -Wl,-subsystem,windows gets rid of the console window
+#-w suppresses all warnings
+#-Wl,-subsystem,windows gets rid of the console window
 COMPILER_FLAGS = -w -Wl,-subsystem,windows
 
 #LINKER_FLAGS specifies the libraries we're linking against
