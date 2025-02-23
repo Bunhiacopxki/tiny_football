@@ -9,7 +9,7 @@
       "stopAtEntry": false,
       "externalConsole": true,
       "cwd": "d:/BTL/BTL_Game/btl2_game/btl2_game/BTL_Game_2",
-      "program": "d:/BTL/BTL_Game/btl2_game/btl2_game/BTL_Game_2/build/Debug/outDebug",
+      "program": "d:/BTL/BTL_Game/btl2_game/btl2_game/BTL_Game_2/game.exe",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

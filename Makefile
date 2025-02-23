@@ -1,8 +1,11 @@
-#OBJS specifies which files to compile as part of the project
-OBJS = 26_motion.cpp
-
-#CC specifies which compiler we're using
+# Compiler
 CC = g++
+
+# Source files
+SRCS = main.cpp LTexture.hpp Dot.hpp Ball.hpp
+
+# Object files (không cần .o vì ta không tách header và implementation)
+OBJS = $(SRCS)
 
 #INCLUDE_PATHS specifies the additional include paths we'll need
 INCLUDE_PATHS = -ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdl\include\SDL2 \
@@ -16,18 +19,19 @@ LIBRARY_PATHS = -LD:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw
 				-LD:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdll_ttf\lib \
 				-LD:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdl_mixer\lib
 
-#COMPILER_FLAGS specifies the additional compilation options we're using
-#-w suppresses all warnings
-#-Wl,-subsystem,windows gets rid of the console window
+# Compiler flags
 COMPILER_FLAGS = -w -Wl,-subsystem,windows
 
-#LINKER_FLAGS specifies the libraries we're linking against
+# Linker flags
 LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
-#OBJ_NAME specifies the name of our exectuable
-OBJ_NAME = 26_tut
+# Executable file
+OBJ_NAME = game.exe
 
+# Build target
+all: $(SRCS)
+	$(CC) $(SRCS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
 
-#This is the target that compiles our executable
-all : $(OBJS)
-	$(CC) $(OBJS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+# Clean target
+clean:
+	rm -f $(OBJ_NAME)
