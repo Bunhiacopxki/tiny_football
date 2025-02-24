@@ -39,9 +39,18 @@ class Dot
 		//Shows the dot on the screen
 		void render(LTexture& gDotTexture);
 
+        void rotate(LTexture& gDotTexture);
+
+        //Dot's collision box
+		SDL_Rect mCollider;
+
+        bool isStop();
+        LTexture* mainCircle;
     private:
 		//The X and Y offsets of the dot
 		int mPosX, mPosY;
+
+        double mAngle;
 
 		//The velocity of the dot
 		int mVelX, mVelY;
@@ -67,6 +76,10 @@ Dot::Dot(bool isMainDot)
     mVelX = 0;
     mVelY = 0;
 	mIsMainDot = isMainDot;
+
+    //Set collision box dimension
+	mCollider.w = DOT_WIDTH;
+	mCollider.h = DOT_HEIGHT;
 }
 
 void Dot::handleEvent( SDL_Event& e )
@@ -118,10 +131,24 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots)
         // Cập nhật vị trí của main dot theo điều khiển
         mPosX += mVelX;
         mPosY += mVelY;
+        mCollider.x = mPosX;
+        mCollider.y = mPosY;
 
+        // 🔹 Tính toán góc xoay dựa trên hướng di chuyển
+        if (mVelX != 0 || mVelY != 0)
+        {
+            mAngle = atan2(mVelY, mVelX) * (180.0 / M_PI); // Chuyển radian sang độ
+        }
+        
         // Kiểm tra va chạm biên
-        if ((mPosX < 0) || (mPosX + DOT_WIDTH > SCREEN_WIDTH)) mPosX -= mVelX;
-        if ((mPosY < 0) || (mPosY + DOT_HEIGHT > SCREEN_HEIGHT)) mPosY -= mVelY;
+        if ((mPosX < 0) || (mPosX + DOT_WIDTH > SCREEN_WIDTH)){
+            mPosX -= mVelX;
+            mCollider.x = mPosX;
+        }
+        if ((mPosY < 0) || (mPosY + DOT_HEIGHT > SCREEN_HEIGHT)){
+            mPosY -= mVelY;
+            mCollider.y = mPosY;
+        }
     }
     else
     {
@@ -129,6 +156,10 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots)
         if (mainDot.mVelX == 0 && mainDot.mVelY == 0) {
             return;
         }
+
+        double dx = mainDot.mPosX - mPosX;
+        double dy = mainDot.mPosY - mPosY;
+        mAngle = atan2(dy, dx) * (180.0 / M_PI); // 🔹 Xoay Dot phụ về hướng mainDot
 
         double distance = getDistance(mPosX, mPosY, mainDot.mPosX, mainDot.mPosY);
 		double speed = sqrt(mainDot.mVelX * mainDot.mVelX + mainDot.mVelY * mainDot.mVelY);
@@ -145,6 +176,18 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots)
 
 			mPosX += mVelX * 0.9;
 			mPosY += mVelY * 0.9;
+            mCollider.x = mPosX;
+            mCollider.y = mPosY;
+            
+            // Kiểm tra va chạm biên
+            if ((mPosX < 0) || (mPosX + DOT_WIDTH > SCREEN_WIDTH)){
+                mPosX -= mVelX;
+                mCollider.x = mPosX;
+            }
+            if ((mPosY < 0) || (mPosY + DOT_HEIGHT > SCREEN_HEIGHT)){
+                mPosY -= mVelY;
+                mCollider.y = mPosY;
+            }
 
         }
         else if (distance > RANGE) {
@@ -213,10 +256,38 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots)
     }
 }
 
+// void Dot::render(LTexture& gDotTexture)
+// {
+//     //Show the dot
+// 	// gDotTexture.render( mPosX, mPosY );
+//     SDL_Point center = { 40 / 2, 70 / 2 };
+//     // double angle = 45;
+//     gDotTexture.renderScale(mPosX, mPosY,40,70, NULL, mAngle, &center, SDL_FLIP_NONE);
+//     if(mIsMainDot) mainCircle->render(mPosX, mPosY);
+// }
+
 void Dot::render(LTexture& gDotTexture)
 {
-    //Show the dot
-	gDotTexture.render( mPosX, mPosY );
+    // 🔹 Lấy kích thước thực tế từ texture
+    int dotWidth = gDotTexture.getWidth();
+    int dotHeight = gDotTexture.getHeight();
+
+    // 🔹 Xác định tâm ảnh
+    SDL_Point center = { dotWidth / 2, dotHeight / 2 };
+
+    // 🔹 Render Dot tại vị trí (mPosX, mPosY) nhưng lấy tâm làm điểm gốc
+    gDotTexture.renderScale(mPosX, mPosY, dotWidth, dotHeight, NULL, mAngle, &center, SDL_FLIP_NONE);
+
+    // 🔹 Đảm bảo `mainCircle` luôn trùng tâm với Dot
+    if (mIsMainDot)
+    {
+        mainCircle->render(mPosX - (center.x / 2)-5, mPosY);//,70, 70, NULL, mAngle, &center, SDL_FLIP_NONE); // Tâm của `mainCircle` chính là `mPosX, mPosY`
+    }
+}
+
+
+bool Dot::isStop(){
+    return mVelX == 0 && mVelY == 0;
 }
 
 #endif
