@@ -2,7 +2,7 @@
 CC = g++
 
 # Source files
-SRCS = main.cpp LTexture.hpp Dot.hpp Ball.hpp
+SRCS = main.cpp LTexture.hpp Dot.hpp Ball.hpp Game.hpp
 
 # Object files (không cần .o vì ta không tách header và implementation)
 OBJS = $(SRCS)
