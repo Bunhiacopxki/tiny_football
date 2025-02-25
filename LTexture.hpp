@@ -4,10 +4,11 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string>
-
+#include <SDL_ttf.h>
 
 //The window renderer
 extern SDL_Renderer* gRenderer;
+TTF_Font* gFont = NULL; 
 
 //Texture wrapper class
 class LTexture
@@ -54,8 +55,6 @@ class LTexture
 		int mWidth;
 		int mHeight;
 };
-
-
 
 LTexture::LTexture()
 {
