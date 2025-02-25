@@ -30,7 +30,7 @@ class Dot
 		static const int DOT_VEL = 3;
 		static const int DOT_VEL_SLOW = 5;
 		
-
+        double mAngle;
 		//Initializes the variables
 		Dot(bool isMainDot = false);
 
@@ -43,10 +43,16 @@ class Dot
 		//Shows the dot on the screen
 		void render(LTexture& gDotTexture);
 
+        void rotate(LTexture& gDotTexture);
+
         //Dot's collision box
 		CircleDot mCollider;
 
+        LTexture* mainCircle;
+
         void rac();
+
+        bool isStop();
 
         void setGoalKeeper() {
             goalkeeper = true;
@@ -57,6 +63,7 @@ class Dot
     private:
 		//The X and Y offsets of the dot
 		int mPosX, mPosY;
+
 
 		//The velocity of the dot
 		int mVelX, mVelY;
@@ -154,7 +161,7 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
         mPosY += mVelY;
         mCollider.x = mPosX;
         mCollider.y = mPosY;
-        
+
         rac();
     }
     else if (goalkeeper) {
@@ -174,6 +181,7 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
         if (mainDot.mVelX == 0 && mainDot.mVelY == 0) {
             return;
         }
+
 
         mMoveTimer -= deltaTime;
 
@@ -296,8 +304,28 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
 
 void Dot::render(LTexture& gDotTexture)
 {
-    //Show the dot
-	gDotTexture.render( mPosX, mPosY );
+    // 🔹 Lấy kích thước thực tế từ texture
+    int dotWidth = gDotTexture.getWidth();
+    int dotHeight = gDotTexture.getHeight();
+
+    // 🔹 Xác định tâm ảnh
+    SDL_Point center = { dotWidth / 2, dotHeight / 2 };
+
+    // 🔹 Render Dot tại vị trí (mPosX, mPosY) nhưng lấy tâm làm điểm gốc
+    gDotTexture.renderScale(mPosX, mPosY, dotWidth, dotHeight, NULL, mAngle, &center, SDL_FLIP_NONE);
+
+    // 🔹 Đảm bảo `mainCircle` luôn trùng tâm với Dot
+    if (mIsMainDot)
+    {
+        mainCircle->render(mPosX - (center.x / 2)-5, mPosY);//,70, 70, NULL, mAngle, &center, SDL_FLIP_NONE); // Tâm của `mainCircle` chính là `mPosX, mPosY`
+    }
+}
+
+
+bool Dot::isStop(){
+
+    return mVelX == 0 && mVelY == 0;
+
 }
 
 #endif

@@ -39,6 +39,8 @@ class Ball {
 
 		//Gets collision circle
 		Circle& getCollider();
+
+        bool isStop();
     private:
 		//The X and Y offsets of the dot
 		int mPosX, mPosY;
@@ -127,5 +129,9 @@ void Ball::shiftColliders()
 	//Align collider to center of dot
 	mCollider.x = mPosX;
 	mCollider.y = mPosY;
+}
+
+bool Ball::isStop(){
+    return mVelX == 0 && mVelY == 0;
 }
 #endif

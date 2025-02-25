@@ -4,6 +4,8 @@
 #include <SDL.h>
 #include "LTexture.hpp"
 #include "math.h"
+#include <vector>
+using namespace std;
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
@@ -23,8 +25,11 @@ class Game {
         void close();
 
     
-        LTexture gDotTexture;
-        LTexture gBallTexture;
+        vector<LTexture> gDotTexture;
+        // LTexture gDotTexture;
+        vector<LTexture> gBallTexture;
+        LTexture background;
+        LTexture circle;
 };
     
     
@@ -91,27 +96,63 @@ class Game {
         bool success = true;
     
         //Load dot texture
-        if( !gDotTexture.loadFromFile( "./img/dot.bmp") )
+        gDotTexture.resize(21);
+        for (int i = 0; i < 21; i++)
         {
-            printf( "Failed to load dot texture!\n" );
-            success = false;
+            std::string path = "./img/red_char/1." + to_string(i) + ".png"; // Tên file: ball0.png, ball1.png, ...
+            if (!gDotTexture[i].loadFromFile(path))
+            {
+                printf("Failed to load red_char texture: %s\n", path.c_str());
+                success = false;
+            }
         }
+        // if( !gDotTexture.loadFromFile( "./img/test.png") )
+        // {
+        //     printf( "Failed to load dot texture!\n" );
+        //     success = false;
+        // }
     
         // Load ball texture
-        if( !gBallTexture.loadFromFile( "./img/ball.png") )
+        gBallTexture.resize(10);
+        for (int i = 0; i < 10; i++)
         {
-            printf( "Failed to load ball texture!\n" );
+            std::string path = "./img/ball" + to_string(i + 1) + ".png"; // Tên file: ball0.png, ball1.png, ...
+            if (!gBallTexture[i].loadFromFile(path))
+            {
+                printf("Failed to load ball texture: %s\n", path.c_str());
+                success = false;
+            }
+        }
+
+        if( !background.loadFromFile( "./img/field2.jpg") )
+        {
+            printf( "Failed to load backgound texture!\n" );
             success = false;
         }
-    
+
+        // circle.resize(4);
+        // for(int i = 0; i < 4; i++){
+        //     if( !circle[i].loadFromFile( "./img/circle"+ to_string(i) +".png") )
+        //     {
+        //         printf( "Failed to load circle texture!\n" );
+        //         success = false;
+        //     }
+        // }
+        if( !circle.loadFromFile( "./img/circle1.png") )
+        {
+            printf( "Failed to load circle texture!\n" );
+            success = false;
+        }
         return success;
     }
     
     void Game::close()
     {
         //Free loaded images
-        gDotTexture.free();
-        gBallTexture.free();
+        circle.free();
+        for (int i = 0; i < 21; i++) gDotTexture[i].free();
+        for (int i = 0; i < 10; i++) gBallTexture[i].free();
+        background.free();
     
         //Destroy window	
         SDL_DestroyRenderer( gRenderer );
