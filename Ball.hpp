@@ -39,6 +39,8 @@ class Ball {
 
 		//Gets collision circle
 		Circle& getCollider();
+
+        bool isStop();
     private:
 		//The X and Y offsets of the dot
 		int mPosX, mPosY;
@@ -53,10 +55,8 @@ class Ball {
 		void shiftColliders();
 };
 
-
 Ball::Ball()
 {
-    
     mPosX = SCREEN_WIDTH / 2;  // Bóng ở giữa màn hình
     mPosY = SCREEN_HEIGHT / 2;
 
@@ -69,8 +69,6 @@ Ball::Ball()
 	//Move collider relative to the circle
 	shiftColliders();
 }
-
-
 
 void Ball::move()
 {
@@ -110,7 +108,6 @@ void Ball::move()
     shiftColliders();
 }
 
-
 void Ball::render(LTexture& gBallTexture)
 {
     //Show the dot
@@ -127,5 +124,9 @@ void Ball::shiftColliders()
 	//Align collider to center of dot
 	mCollider.x = mPosX;
 	mCollider.y = mPosY;
+}
+
+bool Ball::isStop(){
+    return mVelX == 0 && mVelY == 0;
 }
 #endif

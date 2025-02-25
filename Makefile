@@ -2,22 +2,22 @@
 CC = g++
 
 # Source files
-SRCS = main.cpp LTexture.hpp Dot.hpp Ball.hpp
+SRCS = main.cpp LTexture.hpp Dot.hpp Ball.hpp Game.hpp
 
 # Object files (không cần .o vì ta không tách header và implementation)
 OBJS = $(SRCS)
 
-# Include paths
-INCLUDE_PATHS = -ID:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdl\include\SDL2 \
-                -ID:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sld_image\include\SDL2 \
-                -ID:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdll_ttf\include\SDL2 \
-                -ID:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdl_mixer\include\SDL2
+#INCLUDE_PATHS specifies the additional include paths we'll need
+INCLUDE_PATHS = -ID:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sdl\include\SDL2 \
+				-ID:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sld_image\include\SDL2 \
+				-ID:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sdll_ttf\include\SDL2 \
+				-ID:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sdl_mixer\include\SDL2
 
-# Library paths
-LIBRARY_PATHS = -LD:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdl\lib \
-                -LD:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sld_image\lib \
-                -LD:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdll_ttf\lib \
-                -LD:\BTL\BTL_Game\btl2_game\tut\26_motion\26_motion\x86_64-w64-mingw32_sdl_mixer\lib
+#LIBRARY_PATHS specifies the additional library paths we'll need
+LIBRARY_PATHS = -LD:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sdl\lib \
+				-LD:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sld_image\lib \
+				-LD:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sdll_ttf\lib \
+				-LD:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sdl_mixer\lib
 
 # Compiler flags
 COMPILER_FLAGS = -w -Wl,-subsystem,windows

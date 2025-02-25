@@ -4,11 +4,12 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string>
-#include <SDL_ttf.h>
+#include <SDL_ttf.h> // để thêm chữ
+
 
 //The window renderer
 extern SDL_Renderer* gRenderer;
-TTF_Font* gFont = NULL; 
+extern TTF_Font* gFont; // Biến toàn cục để lưu font
 
 //Texture wrapper class
 class LTexture
@@ -42,7 +43,7 @@ class LTexture
 		
 		//Renders texture at given point
 		void render( int x, int y, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE );
-
+		void renderScale(int x, int y, int newWidth, int newHeight, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
 		//Gets image dimensions
 		int getWidth();
 		int getHeight();
@@ -118,6 +119,7 @@ bool LTexture::loadFromRenderedText( std::string textureText, SDL_Color textColo
 	free();
 
 	//Render text surface
+	TTF_SetFontStyle(gFont, TTF_STYLE_BOLD);
 	SDL_Surface* textSurface = TTF_RenderText_Solid( gFont, textureText.c_str(), textColor );
 	if( textSurface != NULL )
 	{
@@ -194,6 +196,25 @@ void LTexture::render( int x, int y, SDL_Rect* clip, double angle, SDL_Point* ce
 	SDL_RenderCopyEx( gRenderer, mTexture, clip, &renderQuad, angle, center, flip );
 }
 
+void LTexture::renderScale(int x, int y, int newWidth, int newHeight, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip)
+{
+    if (mTexture != NULL)
+    {
+        // Xác định vùng vẽ với kích thước tùy chỉnh
+        SDL_Rect renderQuad = { x, y, newWidth, newHeight };
+
+        // Nếu có clip, lấy kích thước của clip
+        if (clip != NULL)
+        {
+            renderQuad.w = clip->w;
+            renderQuad.h = clip->h;
+        }
+
+        // Render texture với kích thước mới
+        SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
+    }
+}
+
 int LTexture::getWidth()
 {
 	return mWidth;
@@ -203,6 +224,5 @@ int LTexture::getHeight()
 {
 	return mHeight;
 }
-
 
 #endif

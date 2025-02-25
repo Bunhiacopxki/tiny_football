@@ -4,6 +4,8 @@
 #include <SDL.h>
 #include "LTexture.hpp"
 #include "math.h"
+#include <vector>
+using namespace std;
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
@@ -22,12 +24,14 @@ public:
     void close();
 
     void showInstructions();
-
-    LTexture gDotTexture;
-    LTexture gBallTexture;
-    LTexture gTextTexture;
-};
     
+    vector<LTexture> gDotTexture;
+    // LTexture gDotTexture;
+    vector<LTexture> gBallTexture;
+    LTexture gTextTexture;
+    LTexture background;
+    LTexture circle;
+};
     
 bool Game::init()
 {
@@ -96,10 +100,10 @@ bool Game::init()
                 }
             }
         }
+    
+        return success;
     }
-
-    return success;
-}
+} 
 
 bool Game::loadMedia()
 {
@@ -107,16 +111,43 @@ bool Game::loadMedia()
     bool success = true;
 
     //Load dot texture
-    if( !gDotTexture.loadFromFile( "./img/dot.bmp") )
+    gDotTexture.resize(21);
+    for (int i = 0; i < 21; i++)
     {
-        printf( "Failed to load dot texture!\n" );
+        std::string path = "./img/red_char/1." + to_string(i) + ".png"; // Tên file: ball0.png, ball1.png, ...
+        if (!gDotTexture[i].loadFromFile(path))
+        {
+            printf("Failed to load red_char texture: %s\n", path.c_str());
+            success = false;
+        }
+    }
+    // if( !gDotTexture.loadFromFile( "./img/test.png") )
+    // {
+    //     printf( "Failed to load dot texture!\n" );
+    //     success = false;
+    // }
+
+    // Load ball texture
+    gBallTexture.resize(10);
+    for (int i = 0; i < 10; i++)
+    {
+        std::string path = "./img/ball" + to_string(i + 1) + ".png"; // Tên file: ball0.png, ball1.png, ...
+        if (!gBallTexture[i].loadFromFile(path))
+        {
+            printf("Failed to load ball texture: %s\n", path.c_str());
+            success = false;
+        }
+    }
+
+    if( !background.loadFromFile( "./img/field2.jpg") )
+    {
+        printf( "Failed to load backgound texture!\n" );
         success = false;
     }
 
-    // Load ball texture
-    if( !gBallTexture.loadFromFile( "./img/ball.png") )
+    if( !circle.loadFromFile( "./img/circle1.png") )
     {
-        printf( "Failed to load ball texture!\n" );
+        printf( "Failed to load circle texture!\n" );
         success = false;
     }
 
@@ -126,8 +157,10 @@ bool Game::loadMedia()
 void Game::close()
 {
     //Free loaded images
-    gDotTexture.free();
-    gBallTexture.free();
+    circle.free();
+    for (int i = 0; i < 21; i++) gDotTexture[i].free();
+    for (int i = 0; i < 10; i++) gBallTexture[i].free();
+    background.free();
     gTextTexture.free();
 
     //Destroy window	
@@ -148,9 +181,25 @@ void Game::showInstructions()
 
     SDL_Color textColor = {0, 0, 0, 255};
 
-    if (!gTextTexture.loadFromRenderedText("Press ESC to return", textColor))
+    std::vector<std::string> introText = {
+        "Welcome to Tiny Football!",
+        "A fast-paced, 2D football game full of action!",
+        "Controls:",
+        "Move - Arrow Keys",
+        "Shoot - ?",
+        "Sprint - ?",
+        "Pass/Swap - ?",
+        "Press ESC to return"
+    };
+
+    std::vector<LTexture> textTextures(introText.size());
+
+    for (size_t i = 0; i < introText.size(); i++)
     {
-        printf("Không thể hiển thị văn bản hướng dẫn!\n");
+        if (!textTextures[i].loadFromRenderedText(introText[i], textColor))
+        {
+            printf("Không thể hiển thị dòng văn bản: %s\n", introText[i].c_str());
+        }
     }
 
     while (!back)
@@ -170,7 +219,11 @@ void Game::showInstructions()
         SDL_SetRenderDrawColor(gRenderer, 200, 200, 200, 255);
         SDL_RenderClear(gRenderer);
 
-        gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, SCREEN_HEIGHT / 2);
+        int startY = SCREEN_HEIGHT / 4;
+        for (size_t i = 0; i < introText.size(); i++)
+        {
+            textTextures[i].render((SCREEN_WIDTH - textTextures[i].getWidth()) / 2, startY + i * 50);
+        }
 
         SDL_RenderPresent(gRenderer);
     }
