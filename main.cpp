@@ -11,6 +11,7 @@ and may not be redistributed without written permission.*/
 #include "Dot.hpp"
 #include "Ball.hpp"
 #include "Game.hpp"
+#include "LTimer.hpp"
 
 using namespace std;
 
@@ -35,37 +36,43 @@ SDL_Renderer* gRenderer = NULL;
 TTF_Font* gFont = NULL; // Khai báo biến toàn cục
 LTexture gTextTexture; // Texture cho văn bản
 
+const int GAME_DURATION = 300; // 5 phút thực tế
+const int DISPLAY_TIME_MAX = 5400; // 90 phút hiển thị
+LTimer gameTimer;
+
+int displayTime = 0;
+
 //The application time based timer
-class LTimer
-{
-    public:
-		//Initializes variables
-		LTimer();
+// class LTimer
+// {
+//     public:
+// 		//Initializes variables
+// 		LTimer();
 
-		//The various clock actions
-		void start();
-		void stop();
-		void pause();
-		void unpause();
+// 		//The various clock actions
+// 		void start();
+// 		void stop();
+// 		void pause();
+// 		void unpause();
 
-		//Gets the timer's time
-		Uint32 getTicks();
+// 		//Gets the timer's time
+// 		Uint32 getTicks();
 
-		//Checks the status of the timer
-		bool isStarted();
-		bool isPaused();
+// 		//Checks the status of the timer
+// 		bool isStarted();
+// 		bool isPaused();
 
-    private:
-		//The clock time when the timer started
-		Uint32 mStartTicks;
+//     private:
+// 		//The clock time when the timer started
+// 		Uint32 mStartTicks;
 
-		//The ticks stored when the timer was paused
-		Uint32 mPausedTicks;
+// 		//The ticks stored when the timer was paused
+// 		Uint32 mPausedTicks;
 
-		//The timer status
-		bool mPaused;
-		bool mStarted;
-};
+// 		//The timer status
+// 		bool mPaused;
+// 		bool mStarted;
+// };
 
 double getDistance(int x1, int y1, int x2, int y2)
 {
@@ -170,6 +177,8 @@ int Game::mainGame(){
 	int frameCount = 0;
 	int frame_char = 0;
 	mainDot.mainCircle = &circle;
+	gameTimer.start(); // Bắt đầu đếm thời gian
+
 	while( !quit )
 	{
 		Uint32 currentTime = SDL_GetTicks();
@@ -206,7 +215,18 @@ int Game::mainGame(){
 		SDL_RenderClear( gRenderer );
 
 		background.renderScale(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
-		renderScoreboard(0, 10);
+		int timeElapsed = gameTimer.getTicks() / 1000;
+		// displayTime = (timeElapsed * DISPLAY_TIME_MAX) / GAME_DURATION;
+		displayTime = (SDL_GetTicks() / 1000.0) * (DISPLAY_TIME_MAX / (double)GAME_DURATION);
+
+		if (timeElapsed >= GAME_DURATION) {
+			// quit = true; 
+			// Kết thúc game sau 5 phút thực tế
+			//thực hiện gì đó để ngưng game nha ! 
+		}
+		renderScoreboard(0, 10 + frame, displayTime);
+
+		// renderScoreboard(0, 10);
 
 		//Render objects
 		if (frameCount % 6 == 0){

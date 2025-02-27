@@ -79,7 +79,7 @@ public:
     int mainGame();
     int showInstructions();
     void renderText(const std::string& text, int x, int y);
-    void renderScoreboard(int red, int blue);
+    void renderScoreboard(int red, int blue, int timeElapsed);
     bool checkCollision( Circle& a, Circle& b );
     
     vector<LTexture> gDotTexture;
@@ -243,15 +243,20 @@ void Game::renderText(const std::string& text, int x, int y)
     gTextTexture.render(x, y);
 }
 
-void Game::renderScoreboard(int red, int blue)
+void Game::renderScoreboard(int red, int blue, int timeElapsed)
 {
     const int cred = (red  < 10) ? 574 + 8 : 574; 
     const int cblu = (blue < 10) ? 675 + 8 : 675;
 
     renderText(to_string(red) , cred, 10);
     renderText(to_string(blue), cblu, 10);
-}
 
+	// Chia thời gian hiển thị thành phút và giây
+	int minutes = timeElapsed / 60;
+	int seconds = timeElapsed % 60;
+	string timeText = (minutes < 10 ? "0" : "") + to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + to_string(seconds);
+	renderText(timeText, 865, 10);
+}
 
 // Màn hình
 
