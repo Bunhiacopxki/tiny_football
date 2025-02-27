@@ -9,7 +9,7 @@
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
-extern int direction;
+
 extern double getDistance(int x1, int y1, int x2, int y2);
 
 struct CircleDot
@@ -32,7 +32,7 @@ class Dot
 		
         double mAngle;
 		//Initializes the variables
-		Dot(bool isMainDot = false);
+		Dot(bool isMainDot, int x, int y);
 
 		//Takes key presses and adjusts the dot's velocity
 		void handleEvent( SDL_Event& e );
@@ -56,8 +56,6 @@ class Dot
 
         void setGoalKeeper() {
             goalkeeper = true;
-            mPosX = 10;
-            mPosY = SCREEN_HEIGHT / 2;
             mVelY = DOT_VEL_SLOW;
         }
     private:
@@ -71,19 +69,11 @@ class Dot
         bool goalkeeper = false;
 };
 
-Dot::Dot(bool isMainDot)
+Dot::Dot(bool isMainDot, int x, int y)
 {
     // Đặt vị trí ngẫu nhiên trên màn hình cho dot phụ
-    if (!isMainDot)
-    {
-        mPosX = rand() % (SCREEN_WIDTH - DOT_WIDTH);
-        mPosY = rand() % (SCREEN_HEIGHT - DOT_HEIGHT);
-    }
-    else
-    {
-        mPosX = SCREEN_WIDTH / 2;  // Dot chính ở giữa màn hình
-        mPosY = SCREEN_HEIGHT / 2;
-    }
+    mPosX = x;
+    mPosY = y;
 
     //Initialize the velocity
     mVelX = 0;
@@ -105,19 +95,15 @@ void Dot::handleEvent( SDL_Event& e )
         {
             case SDLK_UP: 
 				mVelY -= DOT_VEL;
-				direction = 0;
 				break;
             case SDLK_DOWN: 
 				mVelY += DOT_VEL;
-				direction = 0;
 				break;
             case SDLK_LEFT: 
 				mVelX -= DOT_VEL; 
-				direction = 1;
 				break;
             case SDLK_RIGHT: 
 				mVelX += DOT_VEL;
-				direction = 1;
 				break;
         }
     }
@@ -132,7 +118,12 @@ void Dot::handleEvent( SDL_Event& e )
             case SDLK_LEFT: mVelX += DOT_VEL; break;
             case SDLK_RIGHT: mVelX -= DOT_VEL; break;
         }
-		direction = -1;
+    }
+
+    if (mVelX != 0 && mVelY != 0)
+    {
+        mVelX = static_cast<int>(mVelX / std::sqrt(2));
+        mVelY = static_cast<int>(mVelY / std::sqrt(2));
     }
 }
 
@@ -160,6 +151,12 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
         mCollider.x = mPosX;
         mCollider.y = mPosY;
 
+        // Tính toán góc xoay dựa trên hướng di chuyển
+        if (mVelX != 0 || mVelY != 0)
+        {
+            mAngle = atan2(mVelY, mVelX) * (180.0 / M_PI); // Chuyển radian sang độ
+        }
+
         rac();
     }
     else if (goalkeeper) {
@@ -180,6 +177,9 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
             return;
         }
 
+        double dx = mainDot.mPosX - mPosX;
+        double dy = mainDot.mPosY - mPosY;
+        mAngle = atan2(dy, dx) * (180.0 / M_PI); // 🔹 Xoay Dot phụ về hướng mainDot
 
         mMoveTimer -= deltaTime;
 
@@ -242,7 +242,7 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
 
         // *** Xử lý va chạm giữa các dot phụ ***
         for (Dot &other : dots) {
-            if (&other == this || other.mIsMainDot) continue; // Không xét chính nó hoặc main dot
+            if (&other == this || other.mIsMainDot || other.goalkeeper) continue; // Không xét chính nó hoặc main dot
 
             double dx = mCollider.x - other.mCollider.x;
             double dy = mCollider.y - other.mCollider.y;
@@ -275,7 +275,7 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
             }
         }
 
-        if (!mIsMainDot) {
+        if (!mIsMainDot || !goalkeeper) {
             double dx = mCollider.x - mainDot.mCollider.x;
             double dy = mCollider.y - mainDot.mCollider.y;
             double distance = sqrt(dx * dx + dy * dy);

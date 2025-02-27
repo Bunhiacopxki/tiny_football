@@ -17,7 +17,6 @@ using namespace std;
 //Screen dimension constants
 int SCREEN_WIDTH = 1280;
 int SCREEN_HEIGHT = 780;
-int direction = -1;
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -235,19 +234,22 @@ int main( int argc, char* args[] )
 			}
 
 			//The dot that will be moving around on the screen
-			Dot mainDot(true);  // Dot chính do người chơi điều khiển
+			Dot mainDot(true, SCREEN_WIDTH / 2 - 175, SCREEN_HEIGHT / 2);  // Dot chính do người chơi điều khiển
     		std::vector<Dot> dots; // Danh sách dot phụ
 
 			// Ball
 			Ball ball;
 
-			for (int i = 0; i < 4; i++)
+			int position[] = { static_cast<int>(SCREEN_HEIGHT / 4), 
+								static_cast<int>(SCREEN_HEIGHT / 2), 
+								static_cast<int>(3 * SCREEN_HEIGHT / 4) };
+			for (int i = 0; i < 3; i++)
 			{
-				dots.push_back(Dot(false));
+				dots.push_back(Dot(false, SCREEN_WIDTH / 5, position[i]));
 			}
 
-			int randomIndex = rand() % dots.size();
-			dots[randomIndex].setGoalKeeper();
+			Dot goalkeeper(false, 10, SCREEN_HEIGHT / 2);
+			goalkeeper.setGoalKeeper();
 
 			Uint32 lastTime = SDL_GetTicks();
 			double deltaTime = 0.0;
@@ -281,6 +283,8 @@ int main( int argc, char* args[] )
 				{
 					dot.move(mainDot, dots, deltaTime);
 				}
+				goalkeeper.move(mainDot, dots, deltaTime);
+
 				// Move the ball
 				ball.move();
 
@@ -303,6 +307,7 @@ int main( int argc, char* args[] )
 				{
 					dot.render(game.gDotTexture[frame_char]);
 				}
+				goalkeeper.render(game.gDotTexture[frame_char]);
 
 				// Chỉ đổi frame sau mỗi 5 vòng lặp
 				if (frameCount % 5 == 0)
