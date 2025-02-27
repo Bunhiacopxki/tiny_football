@@ -20,7 +20,8 @@ LIBRARY_PATHS = -LD:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-ming
 				-LD:\BTL\BTL_Game\btl2_game\btl2_game\BTL_Game_2\x86_64-w64-mingw32_sdl_mixer\lib
 
 # Compiler flags
-COMPILER_FLAGS = -w -Wl,-subsystem,windows
+# COMPILER_FLAGS = -w -Wl,-subsystem,windows
+COMPILER_FLAGS = -w -mconsole
 
 # Linker flags
 LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer

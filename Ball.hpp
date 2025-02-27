@@ -131,6 +131,7 @@ void Ball::shiftColliders()
 }
 
 bool Ball::isStop(){
+    return !isFollowing;
     return mVelX == 0 && mVelY == 0;
 }
 
@@ -171,6 +172,7 @@ void Ball::follow(Dot &player)
     
     // Đánh dấu rằng bóng đang theo dõi cầu thủ
     isFollowing = true;
+    shiftColliders();
 }
 
 

@@ -231,7 +231,7 @@ int Game::mainGame(){
 			frameCount = 0;
 		}
 		frameCount++; // Tăng biến đếm
-		
+		if (frame > 0) printf("frame: %d", frame);
 		// Ball render
 		ball.render(gBallTexture[frame]);
 		//Update screen
