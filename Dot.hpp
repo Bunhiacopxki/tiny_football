@@ -12,7 +12,7 @@ extern int SCREEN_HEIGHT;
 extern int direction;
 extern double getDistance(int x1, int y1, int x2, int y2);
 
-struct CircleDot
+struct Circle
 {
 	int x, y;
 	int r;
@@ -46,7 +46,7 @@ class Dot
         void rotate(LTexture& gDotTexture);
 
         //Dot's collision box
-		CircleDot mCollider;
+		Circle mCollider;
 
         LTexture* mainCircle;
 
@@ -60,7 +60,7 @@ class Dot
             mPosY = SCREEN_HEIGHT / 2;
             mVelY = DOT_VEL_SLOW;
         }
-    private:
+
 		//The X and Y offsets of the dot
 		int mPosX, mPosY;
 

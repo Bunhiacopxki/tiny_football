@@ -6,17 +6,14 @@
 #include <cmath>
 #include <cstdlib> 
 #include "LTexture.hpp"
+#include "Dot.hpp"
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 extern int direction;
 extern double getDistance(int x1, int y1, int x2, int y2);
 
-struct Circle
-{
-	int x, y;
-	int r;
-};
+
 
 class Ball {
 	public:
@@ -40,19 +37,24 @@ class Ball {
 		//Gets collision circle
 		Circle& getCollider();
 
+        void follow(Dot&);
+
         bool isStop();
-    private:
+    
 		//The X and Y offsets of the dot
 		int mPosX, mPosY;
 
 		//The velocity of the dot
 		int mVelX, mVelY;
 
+        bool isFollowing;
+
         //Dot's collision circle
 		Circle mCollider;
 
 		//Moves the collision circle relative to the dot's offset
 		void shiftColliders();
+
 };
 
 Ball::Ball()
@@ -60,11 +62,12 @@ Ball::Ball()
     mPosX = SCREEN_WIDTH / 2;  // Bóng ở giữa màn hình
     mPosY = SCREEN_HEIGHT / 2;
 
+    isFollowing = false;
 	//Set collision circle size
 	mCollider.r = BALL_WIDTH / 2;
     //Initialize the velocity
-    mVelX = 5;
-    mVelY = 5;
+    mVelX = 0;
+    mVelY = 0;
 
 	//Move collider relative to the circle
 	shiftColliders();
@@ -73,6 +76,7 @@ Ball::Ball()
 void Ball::move()
 {
     // Di chuyển bóng theo vận tốc
+    
     mPosX += mVelX;
     mPosY += mVelY;
 
@@ -129,4 +133,46 @@ void Ball::shiftColliders()
 bool Ball::isStop(){
     return mVelX == 0 && mVelY == 0;
 }
+
+
+void Ball::follow(Dot &player)
+{
+    // Lấy vị trí cầu thủ
+    int playerX = player.mPosX;
+    int playerY = player.mPosY;
+    
+    // Lấy vận tốc của cầu thủ (để xác định hướng "trước mặt")
+    int pVelX = player.mVelX;
+    int pVelY = player.mVelY;
+    
+    // Tính vector đơn vị cho hướng di chuyển của cầu thủ
+    float norm = std::sqrt(float(pVelX * pVelX + pVelY * pVelY));
+    float dirX = 0.0f, dirY = 0.0f;
+    if (norm > 0.0f)
+    {
+        dirX = pVelX / norm;
+        dirY = pVelY / norm;
+    }
+    else
+    {
+        // Nếu cầu thủ không di chuyển, đặt hướng mặc định (ví dụ: về phía phải)
+        dirX = 1.0f;
+        dirY = 0.0f;
+    }
+    
+    // Tính vị trí "trước mặt" của cầu thủ với một khoảng cách offset nhất định
+    int offset = 40;  // khoảng cách cách mặt cầu thủ (có thể điều chỉnh)
+    mPosX = playerX + int(dirX * offset);
+    mPosY = playerY + int(dirY * offset) + 20;
+    
+    // Khi bóng "dính" vào cầu thủ, ngừng di chuyển độc lập
+    mVelX = 0;
+    mVelY = 0;
+    
+    // Đánh dấu rằng bóng đang theo dõi cầu thủ
+    isFollowing = true;
+}
+
+
+
 #endif

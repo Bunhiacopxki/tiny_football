@@ -14,6 +14,13 @@ and may not be redistributed without written permission.*/
 
 using namespace std;
 
+enum RETURNSYMBOL {
+	QUIT,
+	SUCCESS,
+	GAME,
+	INSTRUCTION
+};
+
 //Screen dimension constants
 int SCREEN_WIDTH = 1280;
 int SCREEN_HEIGHT = 780;
@@ -65,72 +72,174 @@ double getDistance(int x1, int y1, int x2, int y2)
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-void renderText(const std::string& text, int x, int y)
-{
-    SDL_Color textColor = { 0, 0, 0 }; // Màu chữ đen
-    if (!gTextTexture.loadFromRenderedText(text, textColor))
-    {
-        printf("Failed to render text: %s\n", text.c_str());
-    }
-    gTextTexture.render(x, y);
-}
+int Game::menu(){
+    
+	bool inMenu = true;
+	// Play now button
+	SDL_Surface* play_surface = IMG_Load("./img/play_button.png");
+	SDL_Texture* play_button = SDL_CreateTextureFromSurface(gRenderer, play_surface);
+	SDL_FreeSurface(play_surface);
+	// Introduction button
+	SDL_Surface* intro_surface = IMG_Load("./img/introduction_button.png");
+	SDL_Texture* intro_button = SDL_CreateTextureFromSurface(gRenderer, intro_surface);
+	SDL_FreeSurface(intro_surface);
+	// Background
+	SDL_Surface* bgSurface = IMG_Load("./img/background.png");
+	SDL_Texture* bgTexture = SDL_CreateTextureFromSurface(gRenderer, bgSurface);
+	SDL_FreeSurface(bgSurface); // Giải phóng surface sau khi chuyển thành texture
+	int buttonWidth = 250;
+	int buttonHeight = 100;
+	int centerX = (SCREEN_WIDTH - buttonWidth) / 2;
 
-void renderScoreboard(int red, int blue)
-{
-    const int cred = (red  < 10) ? 574 + 8 : 574; 
-    const int cblu = (blue < 10) ? 675 + 8 : 675;
+	Button instructionButton(centerX, SCREEN_HEIGHT * 1 / 2, buttonWidth, buttonHeight, intro_button);
+	Button playButton(centerX, SCREEN_HEIGHT * 1 / 2 + buttonHeight * 3 / 2, buttonWidth, buttonHeight, play_button);
 
-    renderText(to_string(red) , cred, 10);
-    renderText(to_string(blue), cblu, 10);
-}
+	while (inMenu)
+	{
+		int mouseX, mouseY;
+		while (SDL_PollEvent(&e) != 0)
+		{
+			if (e.type == SDL_QUIT){
+                SDL_DestroyTexture(bgTexture);
+				return QUIT;
+            }
 
-class Button {
-public:
-	SDL_Rect mBox; // Vùng button
-	SDL_Texture* mTexture;
-	SDL_Color defaultColor = {255, 255, 255, 255};  // Màu gốc (trắng)
-	SDL_Color hoverColor = {200, 200, 200, 255};    // Màu khi hover (xám)
-	bool isHovered = false;
+			instructionButton.handleEvent(&e);
+			playButton.handleEvent(&e);
 
-	Button(int x, int y, int w, int h, SDL_Texture* texture) {
-		mBox = {x, y, w, h};
-		mTexture = texture;
-	}
+			if (e.type == SDL_MOUSEMOTION)
+			{
+				playButton.handleEvent(&e);
+    			instructionButton.handleEvent(&e);
+			}
 
-	void handleEvent(SDL_Event* e) {
-		int x, y;
-		SDL_GetMouseState(&x, &y);
-		isHovered = (x >= mBox.x && x <= mBox.x + mBox.w && y >= mBox.y && y <= mBox.y + mBox.h);
-	}
-
-	void render(SDL_Renderer* renderer) {
-		if (isHovered) {
-			SDL_SetTextureColorMod(mTexture, 255, 255, 200); // Làm sáng màu button
-		} else {
-			SDL_SetTextureColorMod(mTexture, 255, 255, 255); // Màu bình thường
-		}
-	
-		// Vẽ button
-		SDL_RenderCopy(renderer, mTexture, NULL, &mBox);
-	
-		// Vẽ viền xanh khi hover
-		if (isHovered) {
-			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-			int borderThickness = 3; // Độ dày của viền
-			// Vẽ nhiều hình chữ nhật để tạo viền dày
-			for (int i = 0; i < borderThickness; i++) {
-				SDL_Rect borderRect = {mBox.x - i, mBox.y - i, mBox.w + 2 * i, mBox.h + 2 * i};
-				SDL_RenderDrawRect(renderer, &borderRect);
+			if (e.type == SDL_MOUSEBUTTONDOWN)
+			{
+				SDL_GetMouseState(&mouseX, &mouseY);
+				if (playButton.isClicked(mouseX, mouseY))
+					return GAME;
+				else if (instructionButton.isClicked(mouseX, mouseY))
+					return INSTRUCTION;
 			}
 		}
-	}	
 
-	bool isClicked(int mouseX, int mouseY)
-	{
-		return (mouseX > mBox.x && mouseX < mBox.x + mBox.w &&
-				mouseY > mBox.y && mouseY < mBox.y + mBox.h);
+		SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
+		SDL_RenderClear(gRenderer);
+
+		SDL_Rect bgRect;
+		bgRect.w = buttonWidth * 4;
+		bgRect.h = buttonHeight * 2;
+		bgRect.x = (SCREEN_WIDTH - bgRect.w) / 2;
+		bgRect.y = SCREEN_HEIGHT / 2 - buttonHeight * 3;
+
+		SDL_RenderCopy(gRenderer, bgTexture, NULL, &bgRect);
+
+		playButton.render(gRenderer);
+		instructionButton.render(gRenderer);
+
+		SDL_RenderPresent(gRenderer);
 	}
-};
+    SDL_DestroyTexture(bgTexture);
+	return SUCCESS;
+}
+
+int Game::mainGame(){
+    //Main loop flag
+	bool quit = false;
+
+	//The dot that will be moving around on the screen
+	Dot mainDot(true);  // Dot chính do người chơi điều khiển
+    std::vector<Dot> dots; // Danh sách dot phụ
+
+	// Ball
+	Ball ball;
+
+	for (int i = 0; i < 4; i++)
+	{
+		dots.push_back(Dot(false));
+	}
+
+	int randomIndex = rand() % dots.size();
+	dots[randomIndex].setGoalKeeper();
+
+	Uint32 lastTime = SDL_GetTicks();
+	double deltaTime = 0.0;
+
+	//While application is running
+	int frame = 0;
+	int frameCount = 0;
+	int frame_char = 0;
+	mainDot.mainCircle = &circle;
+	while( !quit )
+	{
+		Uint32 currentTime = SDL_GetTicks();
+		deltaTime = (currentTime - lastTime) / 1000.0;
+		lastTime = currentTime;
+		//Handle events on queue
+		while( SDL_PollEvent( &e ) != 0 )
+		{
+			//User requests quit
+			if( e.type == SDL_QUIT )
+			{
+				return QUIT;
+			}
+
+			//Handle input for the dot
+			mainDot.handleEvent( e );
+		}
+
+		//Move the dot
+		if (checkCollision(mainDot.mCollider, ball.mCollider)){
+			ball.isFollowing = true;
+		}
+		mainDot.move(mainDot, dots, deltaTime);
+		for (auto &dot : dots)
+		{
+			dot.move(mainDot, dots, deltaTime);
+		}
+		// Move the ball
+		if (ball.isFollowing) ball.follow(mainDot);
+		else ball.move();
+
+		//Clear screen
+		SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+		SDL_RenderClear( gRenderer );
+
+		background.renderScale(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+		renderScoreboard(0, 10);
+
+		//Render objects
+		if (frameCount % 6 == 0){
+			if(!mainDot.isStop()) frame_char = (frame_char + 1) % 21; // Cập nhật frame
+			else{
+				frame_char = 0;
+			}
+		}
+		mainDot.render(gDotTexture[frame_char]);
+		for (auto &dot : dots)
+		{
+			dot.render(gDotTexture[frame_char]);
+		}
+
+		// Chỉ đổi frame sau mỗi 5 vòng lặp
+		if (frameCount % 5 == 0)
+		{
+			if(!ball.isStop()) frame = (frame + 1) % 10; // Cập nhật frame
+			// frameCount = 0; // Reset biến đếm
+		}
+		if (frameCount % 30 == 0){
+			frameCount = 0;
+		}
+		frameCount++; // Tăng biến đếm
+		
+		// Ball render
+		ball.render(gBallTexture[frame]);
+		//Update screen
+		SDL_RenderPresent( gRenderer );
+	}
+	return SUCCESS;
+}
+
 
 int main( int argc, char* args[] )
 {
@@ -162,165 +271,21 @@ int main( int argc, char* args[] )
 		}
 		else
 		{	
-			//Main loop flag
-			bool quit = false;
-
-			//Event handler
-			SDL_Event e;
-
-			bool inMenu = true;
-
-			// Play now button
-			SDL_Surface* play_surface = IMG_Load("./img/play_button.png");
-			SDL_Texture* play_button = SDL_CreateTextureFromSurface(gRenderer, play_surface);
-			SDL_FreeSurface(play_surface);
-			// Introduction button
-			SDL_Surface* intro_surface = IMG_Load("./img/introduction_button.png");
-			SDL_Texture* intro_button = SDL_CreateTextureFromSurface(gRenderer, intro_surface);
-			SDL_FreeSurface(intro_surface);
-			// Background
-			SDL_Surface* bgSurface = IMG_Load("./img/background.png");
-			SDL_Texture* bgTexture = SDL_CreateTextureFromSurface(gRenderer, bgSurface);
-			SDL_FreeSurface(bgSurface); // Giải phóng surface sau khi chuyển thành texture
-
-			int buttonWidth = 250;
-			int buttonHeight = 100;
-			int centerX = (SCREEN_WIDTH - buttonWidth) / 2;
-
-			Button instructionButton(centerX, SCREEN_HEIGHT * 1 / 2, buttonWidth, buttonHeight, intro_button);
-			Button playButton(centerX, SCREEN_HEIGHT * 1 / 2 + buttonHeight * 3 / 2, buttonWidth, buttonHeight, play_button);
-
-			while (inMenu)
+			int menuRet = game.menu();
+			switch (menuRet)
 			{
-				int mouseX, mouseY;
-				while (SDL_PollEvent(&e) != 0)
-				{
-					if (e.type == SDL_QUIT)
-						return 0;
-
-					instructionButton.handleEvent(&e);
-					playButton.handleEvent(&e);
-
-					if (e.type == SDL_MOUSEMOTION)
-					{
-						playButton.handleEvent(&e);
-    					instructionButton.handleEvent(&e);
-					}
-
-					if (e.type == SDL_MOUSEBUTTONDOWN)
-					{
-						SDL_GetMouseState(&mouseX, &mouseY);
-						if (playButton.isClicked(mouseX, mouseY))
-							inMenu = false;
-						else if (instructionButton.isClicked(mouseX, mouseY))
-							game.showInstructions();
-					}
-				}
-
-				SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
-				SDL_RenderClear(gRenderer);
-
-				SDL_Rect bgRect;
-				bgRect.w = buttonWidth * 4;
-				bgRect.h = buttonHeight * 2;
-				bgRect.x = (SCREEN_WIDTH - bgRect.w) / 2;
-				bgRect.y = SCREEN_HEIGHT / 2 - buttonHeight * 3;
-
-				SDL_RenderCopy(gRenderer, bgTexture, NULL, &bgRect);
-
-				playButton.render(gRenderer);
-				instructionButton.render(gRenderer);
-
-				SDL_RenderPresent(gRenderer);
+			case QUIT:
+				return 0;
+			
+			case INSTRUCTION:
+				if (game.showInstructions() == QUIT) return 0;
+				break;
+			
+			case GAME:
+				if (game.mainGame() == QUIT) return 0;
+			default:
+				break;
 			}
-
-			//The dot that will be moving around on the screen
-			Dot mainDot(true);  // Dot chính do người chơi điều khiển
-    		std::vector<Dot> dots; // Danh sách dot phụ
-
-			// Ball
-			Ball ball;
-
-			for (int i = 0; i < 4; i++)
-			{
-				dots.push_back(Dot(false));
-			}
-
-			int randomIndex = rand() % dots.size();
-			dots[randomIndex].setGoalKeeper();
-
-			Uint32 lastTime = SDL_GetTicks();
-			double deltaTime = 0.0;
-
-			//While application is running
-			int frame = 0;
-			int frameCount = 0;
-			int frame_char = 0;
-			mainDot.mainCircle = &game.circle;
-			while( !quit )
-			{
-				Uint32 currentTime = SDL_GetTicks();
-				deltaTime = (currentTime - lastTime) / 1000.0;
-				lastTime = currentTime;
-				//Handle events on queue
-				while( SDL_PollEvent( &e ) != 0 )
-				{
-					//User requests quit
-					if( e.type == SDL_QUIT )
-					{
-						quit = true;
-					}
-
-					//Handle input for the dot
-					mainDot.handleEvent( e );
-				}
-
-				//Move the dot
-				mainDot.move(mainDot, dots, deltaTime);
-				for (auto &dot : dots)
-				{
-					dot.move(mainDot, dots, deltaTime);
-				}
-				// Move the ball
-				ball.move();
-
-				//Clear screen
-				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-				SDL_RenderClear( gRenderer );
-
-				game.background.renderScale(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
-				renderScoreboard(0, 10);
-
-				//Render objects
-				if (frameCount % 6 == 0){
-					if(!mainDot.isStop()) frame_char = (frame_char + 1) % 21; // Cập nhật frame
-					else{
-						frame_char = 0;
-					}
-				}
-				mainDot.render(game.gDotTexture[frame_char]);
-				for (auto &dot : dots)
-				{
-					dot.render(game.gDotTexture[frame_char]);
-				}
-
-				// Chỉ đổi frame sau mỗi 5 vòng lặp
-				if (frameCount % 5 == 0)
-				{
-					if(!ball.isStop()) frame = (frame + 1) % 10; // Cập nhật frame
-					// frameCount = 0; // Reset biến đếm
-				}
-				if (frameCount % 30 == 0){
-					frameCount = 0;
-				}
-				frameCount++; // Tăng biến đếm
-				
-				// Ball render
-				ball.render(game.gBallTexture[frame]);
-				//Update screen
-				SDL_RenderPresent( gRenderer );
-			}
-			SDL_DestroyTexture(bgTexture);
 		}
 	}
 

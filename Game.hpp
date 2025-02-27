@@ -5,12 +5,65 @@
 #include "LTexture.hpp"
 #include "math.h"
 #include <vector>
+#include "Dot.hpp"
 using namespace std;
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 //The window we'll be rendering to
 extern SDL_Window* gWindow;
+extern double getDistance(int x1, int y1, int x2, int y2);
+
+
+
+class Button {
+    public:
+        SDL_Rect mBox; // Vùng button
+        SDL_Texture* mTexture;
+        SDL_Color defaultColor = {255, 255, 255, 255};  // Màu gốc (trắng)
+        SDL_Color hoverColor = {200, 200, 200, 255};    // Màu khi hover (xám)
+        bool isHovered = false;
+    
+        Button(int x, int y, int w, int h, SDL_Texture* texture) {
+            mBox = {x, y, w, h};
+            mTexture = texture;
+        }
+    
+        void handleEvent(SDL_Event* e) {
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            isHovered = (x >= mBox.x && x <= mBox.x + mBox.w && y >= mBox.y && y <= mBox.y + mBox.h);
+        }
+    
+        void render(SDL_Renderer* renderer) {
+            if (isHovered) {
+                SDL_SetTextureColorMod(mTexture, 255, 255, 200); // Làm sáng màu button
+            } else {
+                SDL_SetTextureColorMod(mTexture, 255, 255, 255); // Màu bình thường
+            }
+        
+            // Vẽ button
+            SDL_RenderCopy(renderer, mTexture, NULL, &mBox);
+        
+            // Vẽ viền xanh khi hover
+            if (isHovered) {
+                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                int borderThickness = 3; // Độ dày của viền
+                // Vẽ nhiều hình chữ nhật để tạo viền dày
+                for (int i = 0; i < borderThickness; i++) {
+                    SDL_Rect borderRect = {mBox.x - i, mBox.y - i, mBox.w + 2 * i, mBox.h + 2 * i};
+                    SDL_RenderDrawRect(renderer, &borderRect);
+                }
+            }
+        }	
+    
+        bool isClicked(int mouseX, int mouseY)
+        {
+            return (mouseX > mBox.x && mouseX < mBox.x + mBox.w &&
+                    mouseY > mBox.y && mouseY < mBox.y + mBox.h);
+        }
+    };
+
 
 class Game {
 public:
@@ -22,8 +75,12 @@ public:
     
     //Frees media and shuts down SDL
     void close();
-
-    void showInstructions();
+    int menu();
+    int mainGame();
+    int showInstructions();
+    void renderText(const std::string& text, int x, int y);
+    void renderScoreboard(int red, int blue);
+    bool checkCollision( Circle& a, Circle& b );
     
     vector<LTexture> gDotTexture;
     // LTexture gDotTexture;
@@ -31,6 +88,8 @@ public:
     LTexture gTextTexture;
     LTexture background;
     LTexture circle;
+    //Event handler
+	SDL_Event e;
 };
     
 bool Game::init()
@@ -174,7 +233,29 @@ void Game::close()
     SDL_Quit();
 }
 
-void Game::showInstructions()
+void Game::renderText(const std::string& text, int x, int y)
+{
+    SDL_Color textColor = { 0, 0, 0 }; // Màu chữ đen
+    if (!gTextTexture.loadFromRenderedText(text, textColor))
+    {
+        printf("Failed to render text: %s\n", text.c_str());
+    }
+    gTextTexture.render(x, y);
+}
+
+void Game::renderScoreboard(int red, int blue)
+{
+    const int cred = (red  < 10) ? 574 + 8 : 574; 
+    const int cblu = (blue < 10) ? 675 + 8 : 675;
+
+    renderText(to_string(red) , cred, 10);
+    renderText(to_string(blue), cblu, 10);
+}
+
+
+// Màn hình
+
+int Game::showInstructions()
 {
     SDL_Event e;
     bool back = false;
@@ -208,7 +289,7 @@ void Game::showInstructions()
         {
             if (e.type == SDL_QUIT)
             {
-                exit(0);
+                return 0; // 0 is for QUIT
             }
             else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
             {
@@ -229,4 +310,19 @@ void Game::showInstructions()
     }
 }
     
+bool Game::checkCollision( Circle& a, Circle& b )
+{
+    //Calculate total radius squared
+    int totalRadiusSquared = a.r + b.r;
+
+    //If the distance between the centers of the circles is less than the sum of their radii
+    if( getDistance( a.x, a.y, b.x, b.y ) < ( totalRadiusSquared ) )
+    {
+        //The circles have collided
+        return true;
+    }
+
+    //If not
+    return false;
+}
 #endif
