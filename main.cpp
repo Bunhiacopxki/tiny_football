@@ -12,6 +12,7 @@ and may not be redistributed without written permission.*/
 #include "Ball.hpp"
 #include "Game.hpp"
 #include "KickMeter.hpp"
+#include "LTimer.hpp"
 
 using namespace std;
 
@@ -33,40 +34,45 @@ SDL_Window *gWindow = NULL;
 // The window renderer
 SDL_Renderer *gRenderer = NULL;
 
-TTF_Font *gFont = NULL; // Khai báo biến toàn cục
-LTexture gTextTexture;	// Texture cho văn bản
+TTF_Font* gFont = NULL; // Khai báo biến toàn cục
+LTexture gTextTexture; // Texture cho văn bản
+const int GAME_DURATION = 300; // 5 phút thực tế
+const int DISPLAY_TIME_MAX = 5400; // 90 phút hiển thị
+LTimer gameTimer;
 
-// The application time based timer
-class LTimer
-{
-public:
-	// Initializes variables
-	LTimer();
+int displayTime = 0;
 
-	// The various clock actions
-	void start();
-	void stop();
-	void pause();
-	void unpause();
+//The application time based timer
+// class LTimer
+// {
+//     public:
+// 		//Initializes variables
+// 		LTimer();
 
-	// Gets the timer's time
-	Uint32 getTicks();
+// 		//The various clock actions
+// 		void start();
+// 		void stop();
+// 		void pause();
+// 		void unpause();
 
-	// Checks the status of the timer
-	bool isStarted();
-	bool isPaused();
+// 		//Gets the timer's time
+// 		Uint32 getTicks();
 
-private:
-	// The clock time when the timer started
-	Uint32 mStartTicks;
+// 		//Checks the status of the timer
+// 		bool isStarted();
+// 		bool isPaused();
 
-	// The ticks stored when the timer was paused
-	Uint32 mPausedTicks;
+//     private:
+// 		//The clock time when the timer started
+// 		Uint32 mStartTicks;
 
-	// The timer status
-	bool mPaused;
-	bool mStarted;
-};
+// 		//The ticks stored when the timer was paused
+// 		Uint32 mPausedTicks;
+
+// 		//The timer status
+// 		bool mPaused;
+// 		bool mStarted;
+// };
 
 void Ball::passTo(std::vector<Dot> &players)
 {
@@ -274,7 +280,6 @@ double getDistance(double x1, double y1, double x2, double y2)
 
 int Game::menu()
 {
-
 	bool inMenu = true;
 	// Play now button
 	SDL_Surface *play_surface = IMG_Load("./img/play_button.png");
@@ -363,7 +368,7 @@ int Game::mainGame()
 		static_cast<int>(SCREEN_HEIGHT / 2), 
 		static_cast<int>(3 * SCREEN_HEIGHT / 4) };
 
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			if (i == 0)
 			{
@@ -373,8 +378,8 @@ int Game::mainGame()
 				mainDot2 = &dots2[i];
 				continue;
 			}
-			dots1.push_back(Dot(false, SCREEN_WIDTH / 5, position[i], 1, 0));
-			dots2.push_back(Dot(false, SCREEN_WIDTH / 5, position[i], 2, 0));
+			dots1.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 1, 0));
+			dots2.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 2, 0));
 		}
 
 	Dot goalkeeper1(false, 10, SCREEN_HEIGHT / 2, 1, 0);
@@ -395,6 +400,7 @@ int Game::mainGame()
 	(*mainDot1).mainCircle = &circle;
 	(*mainDot2).mainCircle = &circle;
 	changePhase(PHASE_2);
+	gameTimer.start(); // Bắt đầu đếm thời gian
 	while( !quit )
 	{
 		Uint32 currentTime = SDL_GetTicks();
@@ -413,7 +419,7 @@ int Game::mainGame()
 			(*mainDot1).handleEvent(e, ball, dots1, kickMeter);
 			(*mainDot2).handleEvent(e, ball, dots2, kickMeter);
 		}
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			if (dots1[i].isMain())
 			{
@@ -445,7 +451,7 @@ int Game::mainGame()
 			// Move the dot
 			(*mainDot1).move((*mainDot1), dots1, deltaTime);
 			(*mainDot2).move((*mainDot2), dots2, deltaTime);
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 4; i++)
 			{
 
 				if (!dots1[i].isMain())
@@ -496,8 +502,17 @@ int Game::mainGame()
 		SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
 		SDL_RenderClear( gRenderer );
 
-		background.renderScale(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		renderScoreboard(0, 10);
+		background.renderScale(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+		int timeElapsed = gameTimer.getTicks() / 1000;
+		// displayTime = (timeElapsed * DISPLAY_TIME_MAX) / GAME_DURATION;
+		displayTime = (SDL_GetTicks() / 1000.0) * (DISPLAY_TIME_MAX / (double)GAME_DURATION);
+
+		if (timeElapsed >= GAME_DURATION) {
+			// quit = true; 
+			// Kết thúc game sau 5 phút thực tế
+			//thực hiện gì đó để ngưng game nha ! 
+		}
+		renderScoreboard(0, 10 + frame, displayTime);
 
 		// Render objects
 		if (frameCount1 % 6 == 0)

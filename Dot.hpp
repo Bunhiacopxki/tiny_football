@@ -316,10 +316,10 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
     mVelY = 0;
 
     // Cập nhật vận tốc dựa trên trạng thái phím
-    if (keyUP)    mVelY = -DOT_VEL;
-    if (keyDOWN)  mVelY = DOT_VEL;
-    if (keyLEFT)  mVelX = -DOT_VEL;
-    if (keyRIGHT) mVelX = DOT_VEL;
+    if (keyUP)    mVelY -= DOT_VEL;
+    if (keyDOWN)  mVelY += DOT_VEL;
+    if (keyLEFT)  mVelX -= DOT_VEL;
+    if (keyRIGHT) mVelX += DOT_VEL;
 
     // Giảm vận tốc khi đi chéo
     if (keyUP || keyDOWN) {
