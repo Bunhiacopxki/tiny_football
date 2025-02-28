@@ -12,7 +12,7 @@ extern int SCREEN_HEIGHT;
 
 extern double getDistance(int x1, int y1, int x2, int y2);
 
-struct CircleDot
+struct Circle
 {
 	int x, y;
 	int r;
@@ -46,7 +46,7 @@ class Dot
         void rotate(LTexture& gDotTexture);
 
         //Dot's collision box
-		CircleDot mCollider;
+		Circle mCollider;
 
         LTexture* mainCircle;
 
@@ -58,7 +58,7 @@ class Dot
             goalkeeper = true;
             mVelY = DOT_VEL_SLOW;
         }
-    private:
+
 		//The X and Y offsets of the dot
 		int mPosX, mPosY;
 
@@ -67,6 +67,7 @@ class Dot
 		bool mIsMainDot;  // Xác định dot chính
         double mMoveTimer = 0.5;
         bool goalkeeper = false;
+        bool keyUP = false, keyDOWN = false, keyLEFT = false, keyRIGHT = false;
 };
 
 Dot::Dot(bool isMainDot, int x, int y)
@@ -94,16 +95,16 @@ void Dot::handleEvent( SDL_Event& e )
         switch( e.key.keysym.sym )
         {
             case SDLK_UP: 
-				mVelY -= DOT_VEL;
+                keyUP = true;
 				break;
             case SDLK_DOWN: 
-				mVelY += DOT_VEL;
+                keyDOWN = true;
 				break;
             case SDLK_LEFT: 
-				mVelX -= DOT_VEL; 
+                keyLEFT = true;
 				break;
             case SDLK_RIGHT: 
-				mVelX += DOT_VEL;
+                keyRIGHT = true;
 				break;
         }
     }
@@ -113,17 +114,29 @@ void Dot::handleEvent( SDL_Event& e )
         //Adjust the velocity
         switch( e.key.keysym.sym )
         {
-            case SDLK_UP: mVelY += DOT_VEL; break;
-            case SDLK_DOWN: mVelY -= DOT_VEL; break;
-            case SDLK_LEFT: mVelX += DOT_VEL; break;
-            case SDLK_RIGHT: mVelX -= DOT_VEL; break;
+            case SDLK_UP: keyUP = false; break;
+            case SDLK_DOWN: keyDOWN = false; break;
+            case SDLK_LEFT: keyLEFT = false; break;
+            case SDLK_RIGHT: keyRIGHT = false; break;
         }
     }
 
-    if (mVelX != 0 && mVelY != 0)
-    {
-        mVelX = static_cast<int>(mVelX / std::sqrt(2));
-        mVelY = static_cast<int>(mVelY / std::sqrt(2));
+    // Reset vận tốc
+    mVelX = 0;
+    mVelY = 0;
+
+    // Cập nhật vận tốc dựa trên trạng thái phím
+    if (keyUP)    mVelY = -DOT_VEL;
+    if (keyDOWN)  mVelY = DOT_VEL;
+    if (keyLEFT)  mVelX = -DOT_VEL;
+    if (keyRIGHT) mVelX = DOT_VEL;
+
+    // Giảm vận tốc khi đi chéo
+    if (keyUP || keyDOWN) {
+        if (keyLEFT || keyRIGHT) {
+            mVelX = static_cast<int>(mVelX / std::sqrt(2));
+            mVelY = static_cast<int>(mVelY / std::sqrt(2));
+        }
     }
 }
 
