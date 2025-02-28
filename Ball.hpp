@@ -4,84 +4,108 @@
 #include <SDL.h>
 #include <vector>
 #include <cmath>
-#include <cstdlib> 
+#include <cstdlib>
 #include "LTexture.hpp"
-#include "Dot.hpp"
+// #include "Dot.hpp"
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 extern int direction;
-extern double getDistance(int x1, int y1, int x2, int y2);
+extern double getDistance(double x1, double y1, double x2, double y2);
+class Dot;
+struct Circle
+{
+    int x, y;
+    int r;
+};
+class Ball
+{
+public:
+    static const int BALL_WIDTH = 30;
+    static const int BALL_HEIGHT = 30;
+    static const int RANGE = 200;
 
+    // Maximum axis velocity of the dot
+    static const int BALL_VEL = 5;
+    static const int BALL_VEL_SLOW = 5;
+    friend class Dot;
+    friend class KickMeter;
+    Ball();
 
+    // Moves the dot and checks collision
+    void move();
 
-class Ball {
-	public:
-		static const int BALL_WIDTH = 30;
-		static const int BALL_HEIGHT = 30;
-		static const int RANGE = 200;
+    // Shows the dot on the screen
+    void render(LTexture &gBallTexture);
+    // void followPlayer(Dot &player);
+    void passTo(std::vector<Dot> &players);
+    void update(Dot &mainDot, std::vector<Dot> &players); // Cập nhật bóng theo thời gian
+    void takeBall(Dot &mainDot);
+    void shoot(double angle, double power);
+    bool getKick() { return isWaitingForKick; };
+    // Gets collision circle
+    Circle &getCollider();
 
-		//Maximum axis velocity of the dot
-		static const int BALL_VEL = 5;
-		static const int BALL_VEL_SLOW = 5;
-		
-        Ball();
+    void follow(Dot &);
 
+    bool isStop();
 
-		//Moves the dot and checks collision
-		void move();
+    // The X and Y offsets of the dot
+    double mPosX, mPosY;
 
-		//Shows the dot on the screen
-		void render(LTexture& gBallTexture);
+    // The velocity of the dot
+    double mVelX, mVelY;
 
-		//Gets collision circle
-		Circle& getCollider();
+    int isFollowing;
+    bool isShooting = false;
+    // chuyền bóng
+    bool isPassing = false;
+    double targetX, targetY;
+    double startX, startY;
+    double totalDistance, currentDistance;
+    int passedSegments = 0; // Đếm số đoạn đã qua
 
-        void follow(Dot&);
+    Dot *owner = nullptr;
+    int teamPossessing = -1; // Đội đang giữ bóng
+    double Power = 0.0;
+    // thanh lực
+    bool isWaitingForKick = false;
+    // thời gian chờ tránh chuyền mà lấy lại ngay
+    Uint32 lastPassTime = 0; // Lưu thời điểm bóng được chuyền
+    Uint32 lastShootTime = 0;
 
-        bool isStop();
-    
-		//The X and Y offsets of the dot
-		int mPosX, mPosY;
+    // Dot's collision circle
+    Circle mCollider;
 
-		//The velocity of the dot
-		int mVelX, mVelY;
-
-        bool isFollowing;
-
-        //Dot's collision circle
-		Circle mCollider;
-
-		//Moves the collision circle relative to the dot's offset
-		void shiftColliders();
-
+    // Moves the collision circle relative to the dot's offset
+    void shiftColliders();
 };
 
 Ball::Ball()
 {
-    mPosX = SCREEN_WIDTH / 2;  // Bóng ở giữa màn hình
+    mPosX = SCREEN_WIDTH / 2; // Bóng ở giữa màn hình
     mPosY = SCREEN_HEIGHT / 2;
-
-    isFollowing = false;
-	//Set collision circle size
-	mCollider.r = BALL_WIDTH / 2;
-    //Initialize the velocity
+    isPassing = true;
+    isFollowing = 0;
+    // Set collision circle size
+    mCollider.r = BALL_WIDTH / 2;
+    // Initialize the velocity
     mVelX = 0;
     mVelY = 0;
 
-	//Move collider relative to the circle
-	shiftColliders();
+    // Move collider relative to the circle
+    shiftColliders();
 }
 
 void Ball::move()
 {
     // Di chuyển bóng theo vận tốc
-    
+
     mPosX += mVelX;
     mPosY += mVelY;
 
     // Kiểm tra va chạm biên theo trục X
-    if ( mPosX < 0 )
+    if (mPosX < 0)
     {
         // Chỉnh lại vị trí cho sát biên
         mPosX = 0;
@@ -89,20 +113,20 @@ void Ball::move()
         // n = (1, 0) => v' = ( -v_x, v_y )
         mVelX = -mVelX;
     }
-    else if ( mPosX + BALL_WIDTH > SCREEN_WIDTH )
+    else if (mPosX + BALL_WIDTH > SCREEN_WIDTH)
     {
         mPosX = SCREEN_WIDTH - BALL_WIDTH;
         mVelX = -mVelX;
     }
 
     // Kiểm tra va chạm biên theo trục Y
-    if ( mPosY < 0 )
+    if (mPosY < 0)
     {
         mPosY = 0;
         // n = (0, 1) => v' = ( v_x, -v_y )
         mVelY = -mVelY;
     }
-    else if ( mPosY + BALL_HEIGHT > SCREEN_HEIGHT )
+    else if (mPosY + BALL_HEIGHT > SCREEN_HEIGHT)
     {
         mPosY = SCREEN_HEIGHT - BALL_HEIGHT;
         mVelY = -mVelY;
@@ -112,69 +136,28 @@ void Ball::move()
     shiftColliders();
 }
 
-void Ball::render(LTexture& gBallTexture)
+void Ball::render(LTexture &gBallTexture)
 {
-    //Show the dot
-	gBallTexture.render( mPosX, mPosY );
-}
-
-Circle& Ball::getCollider()
-{
-	return mCollider;
+    // Show the dot
+    gBallTexture.render(mPosX, mPosY);
 }
 
 void Ball::shiftColliders()
 {
-	//Align collider to center of dot
-	mCollider.x = mPosX;
-	mCollider.y = mPosY;
+    // Align collider to center of dot
+    mCollider.x = mPosX;
+    mCollider.y = mPosY;
 }
 
-bool Ball::isStop(){
+bool Ball::isStop()
+{
     return !isFollowing;
     return mVelX == 0 && mVelY == 0;
 }
 
-
-void Ball::follow(Dot &player)
+Circle &Ball::getCollider()
 {
-    // Lấy vị trí cầu thủ
-    int playerX = player.mPosX;
-    int playerY = player.mPosY;
-    
-    // Lấy vận tốc của cầu thủ (để xác định hướng "trước mặt")
-    int pVelX = player.mVelX;
-    int pVelY = player.mVelY;
-    
-    // Tính vector đơn vị cho hướng di chuyển của cầu thủ
-    float norm = std::sqrt(float(pVelX * pVelX + pVelY * pVelY));
-    float dirX = 0.0f, dirY = 0.0f;
-    if (norm > 0.0f)
-    {
-        dirX = pVelX / norm;
-        dirY = pVelY / norm;
-    }
-    else
-    {
-        // Nếu cầu thủ không di chuyển, đặt hướng mặc định (ví dụ: về phía phải)
-        dirX = 1.0f;
-        dirY = 0.0f;
-    }
-    
-    // Tính vị trí "trước mặt" của cầu thủ với một khoảng cách offset nhất định
-    int offset = 40;  // khoảng cách cách mặt cầu thủ (có thể điều chỉnh)
-    mPosX = playerX + int(dirX * offset);
-    mPosY = playerY + int(dirY * offset) + 20;
-    
-    // Khi bóng "dính" vào cầu thủ, ngừng di chuyển độc lập
-    mVelX = 0;
-    mVelY = 0;
-    
-    // Đánh dấu rằng bóng đang theo dõi cầu thủ
-    isFollowing = true;
-    shiftColliders();
+    return mCollider;
 }
-
-
 
 #endif
