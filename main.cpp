@@ -28,6 +28,8 @@ enum RETURNSYMBOL
 int SCREEN_WIDTH = 1280;
 int SCREEN_HEIGHT = 780;
 
+int WindSpeed = 0;
+
 // The window we'll be rendering to
 SDL_Window *gWindow = NULL;
 
@@ -42,7 +44,9 @@ LTimer gameTimer;
 
 int displayTime = 0;
 
-
+int position[] = { static_cast<int>(SCREEN_HEIGHT / 4), 
+	static_cast<int>(SCREEN_HEIGHT / 2), 
+	static_cast<int>(3 * SCREEN_HEIGHT / 4) };
 
 void Ball::passTo(std::vector<Dot> &players)
 {
@@ -111,7 +115,7 @@ void Ball::shoot(double angle, double power)
 	lastShootTime = SDL_GetTicks(); // Đánh dấu thời điểm sut
 }
 
-void Ball::update(Dot &mainDot, std::vector<Dot> &players)
+int Ball::update(Dot &mainDot, std::vector<Dot> &players)
 {
 	if (isPassing)
 	{
@@ -121,13 +125,13 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 		double currentDistance = getDistance(startX, startY, mPosX, mPosY);
 		double segmentDistance = totalDistance / 10.0;
 		int currentSegment = currentDistance / segmentDistance;
-
+		
 		if (currentSegment > passedSegments)
 		{
 			passedSegments = currentSegment;
 			double factor = 1.0 - (passedSegments * 0.05);
 			factor = std::max(0.05, factor); // Đảm bảo không giảm quá mức
-			mVelX = mVelX * factor;
+			mVelX = mVelX * factor + WindSpeed;
 			mVelY = mVelY * factor;
 		}
 
@@ -150,7 +154,7 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 	{
 		mPosX += mVelX;
 		mPosY += mVelY;
-		mVelX *= 0.95;
+		mVelX *= 0.95 + WindSpeed;
 		mVelY *= 0.95;
 		if ((fabs(mVelX) < 0.02 && fabs(mVelY) < 0.02))
 		{
@@ -167,6 +171,12 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 	{
 		passedSegments = 0;
 	}
+	// Check vao
+	int goal = checkGoal();
+	if (goal != 0){
+		return goal;
+	}
+
 	if (owner == nullptr)
 	{
 		// printf("check");
@@ -180,6 +190,7 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 	// {
 	// 	this->followPlayer(*owner);
 	// }
+	return 0;
 }
 
 void Ball::takeBall(Dot &mainDot)
@@ -250,7 +261,23 @@ double getDistance(double x1, double y1, double x2, double y2)
 
 void gameReset(Ball& ball, std::vector<Dot>& dots1, std::vector<Dot>& dots2){
 	ball.resetBall();
-	// for
+	for (int i = 0; i < 4; i++){
+		if (dots1[i].mIsMainDot){
+			dots1[i].resetDot(SCREEN_WIDTH / 2 - 175, SCREEN_HEIGHT / 2);
+		}
+		else {
+			dots1[i].resetDot(SCREEN_WIDTH / 5, position[i - 1]);
+		}
+	}
+	for (int i = 0; i < 4; i++){
+		if (dots2[i].mIsMainDot){
+			dots2[i].resetDot(SCREEN_WIDTH / 2 + 175, SCREEN_HEIGHT / 2);
+		}
+		else {
+			dots2[i].resetDot(4*SCREEN_WIDTH / 5, position[i - 1]);
+		}
+	}
+	
 }
 
 int Game::menu()
@@ -339,9 +366,7 @@ int Game::mainGame()
 
 	// Ball
 	Ball ball;
-	int position[] = { static_cast<int>(SCREEN_HEIGHT / 4), 
-		static_cast<int>(SCREEN_HEIGHT / 2), 
-		static_cast<int>(3 * SCREEN_HEIGHT / 4) };
+	
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -378,6 +403,7 @@ int Game::mainGame()
 	int frameCount2 = 0;
 	int frame_char2 = 0;
 	
+	double Windtime = 5;
 	
 	changePhase(PHASE_2);
 	gameTimer.start(); // Bắt đầu đếm thời gian
@@ -385,6 +411,16 @@ int Game::mainGame()
 	{
 		Uint32 currentTime = SDL_GetTicks();
 		deltaTime = (currentTime - lastTime) / 1000.0;
+		Windtime -= deltaTime;
+		if (Windtime <= 0){
+			int dir = rand();
+			if (dir&1){
+				WindSpeed = rand()%5;
+			}
+			else WindSpeed = -rand()%5;
+			Windtime = 5;
+			printf("Wind Speed: %d", WindSpeed);
+		}
 		lastTime = currentTime;
 		// Handle events on queue
 		while (SDL_PollEvent(&e) != 0)
@@ -460,8 +496,14 @@ int Game::mainGame()
 			{
 				ball.takeBall(player);
 			}
-
-			ball.update(*mainDot1, dots1);
+			
+			// Check goal and move ball
+			int goal = ball.update(*mainDot1, dots1);
+			if (goal != 0){
+				gameReset(ball, dots1, dots2);
+				if (goal == 1) BlueMark++;
+				else RedMark++;
+			}
 			// ball.update(*mainDot2, dots2);
 			//     Move the ball
 			//   ball.move();
@@ -493,7 +535,7 @@ int Game::mainGame()
 			//thực hiện gì đó để ngưng game nha ! 
 			return QUIT;
 		}
-		renderScoreboard(0, 10 + frame, displayTime);
+		renderScoreboard(RedMark, BlueMark, displayTime);
 
 		// Render objects
 		if (frameCount1 % 6 == 0)

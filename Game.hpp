@@ -76,7 +76,8 @@ class Game {
 public:
     // Starts up SDL and creates window
     bool init();
-
+    int RedMark;
+    int BlueMark;
     // Loads media
     bool loadMedia();
 
@@ -110,10 +111,14 @@ public:
     // Mix_Chunk* gameOverSound;
 };
 
+
 bool Game::init()
 {
     // Initialization flag
     bool success = true;
+
+    RedMark = 0;
+    BlueMark = 0;
 
     //Initialize SDL
     if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )

@@ -33,17 +33,17 @@ public:
     Ball();
 
     // Moves the dot and checks collision
-    void move();
+    bool move();
 
     // Shows the dot on the screen
     void render(LTexture &gBallTexture);
     // void followPlayer(Dot &player);
     void passTo(std::vector<Dot> &players);
-    void update(Dot &mainDot, std::vector<Dot> &players); // Cập nhật bóng theo thời gian
+    int update(Dot &mainDot, std::vector<Dot> &players); // Cập nhật bóng theo thời gian
     void takeBall(Dot &mainDot);
     void shoot(double angle, double power);
     bool getKick() { return isWaitingForKick; };
-    bool checkGoal();
+    int checkGoal();
     // Gets collision circle
     Circle &getCollider();
 
@@ -86,8 +86,8 @@ public:
 
 Ball::Ball()
 {
-    mPosX = SCREEN_WIDTH / 2; // Bóng ở giữa màn hình
-    mPosY = SCREEN_HEIGHT / 2;
+    mPosX = SCREEN_WIDTH / 2 - 14; // Bóng ở giữa màn hình
+    mPosY = SCREEN_HEIGHT / 2 + 7;
     isPassing = true;
     isFollowing = 0;
     // Set collision circle size
@@ -101,8 +101,8 @@ Ball::Ball()
 }
 
 void Ball::resetBall(){
-    mPosX = SCREEN_WIDTH / 2; // Bóng ở giữa màn hình
-    mPosY = SCREEN_HEIGHT / 2;
+    mPosX = SCREEN_WIDTH / 2 - 14; // Bóng ở giữa màn hình
+    mPosY = SCREEN_HEIGHT / 2 + 7;
     isPassing = true;
     isFollowing = 0;
     // Set collision circle size
@@ -110,12 +110,12 @@ void Ball::resetBall(){
     // Initialize the velocity
     mVelX = 0;
     mVelY = 0;
-
+    owner = NULL;
     // Move collider relative to the circle
     shiftColliders();
 }
 
-void Ball::move()
+bool Ball::move()
 {
     // Di chuyển bóng theo vận tốc
 
@@ -152,6 +152,7 @@ void Ball::move()
 
     // Cập nhật lại collider nếu cần
     shiftColliders();
+    return 0;
 }
 
 void Ball::render(LTexture &gBallTexture)
@@ -181,20 +182,20 @@ Circle &Ball::getCollider()
 // Kiểm tra xem bóng đã vào khung thành chưa
 // Giả sử khung thành bên trái nằm ở phía trái với chiều rộng 50 và chiều cao từ (SCREEN_HEIGHT/2 - 100) đến (SCREEN_HEIGHT/2 + 100)
 // Tương tự, khung thành bên phải nằm ở phía phải
-bool Ball::checkGoal() {
+int Ball::checkGoal() {
     int goalWidth = 50;           // Chiều rộng vùng goal (có thể điều chỉnh)
     int goalTop = SCREEN_HEIGHT/2 - 100;    // Vị trí y trên của khung thành
     int goalBottom = SCREEN_HEIGHT/2 + 100;   // Vị trí y dưới của khung thành
 
     // Kiểm tra khung thành bên trái
     if(mPosX <= goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom) {
-         return true;
+         return 1;
     }
     // Kiểm tra khung thành bên phải
     if(mPosX + BALL_WIDTH >= SCREEN_WIDTH - goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom) {
-         return true;
+         return 2;
     }
-    return false;
+    return 0;
 }
 
 

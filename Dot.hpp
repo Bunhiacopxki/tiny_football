@@ -88,13 +88,13 @@ public:
     }
     int getTeam() { return team; }
 
+    bool mIsMainDot;  // Xác định dot chính
 private:
     // The X and Y offsets of the dot
     double mPosX, mPosY;
 
     //The velocity of the dot
     double mVelX, mVelY;
-    bool mIsMainDot;  // Xác định dot chính
     int playerID;    // xác định dạng player chính phụ
     double mMoveTimer = 0.5;
     int team; // xác định màu cho 2 bên
@@ -132,7 +132,8 @@ Dot::Dot(bool isMainDot, int x, int y, int team, int playerid)
 }
 
 void Dot::resetDot(int x, int y){
-
+    mPosX = x;
+    mPosY = y;
 }
 
 void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickMeter kickMeter)
@@ -616,8 +617,8 @@ void Dot::render(LTexture &gDotTexture)
         }
         else
         {
-            printf("mainCircle is valid!\n");
-            printf("mPosX: %f, mPosY: %f, center.x: %f\n", mPosX, mPosY, center.x);
+            // printf("mainCircle is valid!\n");
+            // printf("mPosX: %f, mPosY: %f, center.x: %f\n", mPosX, mPosY, center.x);
             mainCircle->render(mPosX - (center.x / 2) - 5, mPosY); //,70, 70, NULL, mAngle, &center, SDL_FLIP_NONE); // Tâm của `mainCircle` chính là `mPosX, mPosY`
         }
     }
