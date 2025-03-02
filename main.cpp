@@ -462,7 +462,7 @@ int Game::mainGame()
 			}
 
 			ball.update(*mainDot1, dots1);
-			// ball.update(*mainDot2, dots2);
+			ball.update(*mainDot2, dots2);
 			//     Move the ball
 			//   ball.move();
 			//   Move the ball

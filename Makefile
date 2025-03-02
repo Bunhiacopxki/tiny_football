@@ -34,4 +34,4 @@ all: $(SRCS)
 
 # Clean target
 clean:
-	rm -f $(OBJ_NAME)
+	rm -f $(OBJ_NAME
