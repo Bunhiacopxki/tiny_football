@@ -41,8 +41,8 @@ public:
 	void setAlpha(Uint8 alpha);
 
 	// Renders texture at given point
-	void render(int x, int y, SDL_Rect *clip = NULL, double angle = 0.0, SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
-	void renderScale(int x, int y, int newWidth, int newHeight, SDL_Rect *clip = NULL, double angle = 0.0, SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
+	void render(double x, double y, SDL_Rect *clip = NULL, double angle = 0.0, SDL_FPoint *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
+	void renderScale(int x, int y, int newWidth, int newHeight, SDL_Rect *clip = NULL, double angle = 0.0, SDL_FPoint *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
 	// Gets image dimensions
 	int getWidth();
 	int getHeight();
@@ -52,8 +52,8 @@ private:
 	SDL_Texture *mTexture;
 
 	// Image dimensions
-	int mWidth;
-	int mHeight;
+	double mWidth;
+	double mHeight;
 };
 
 LTexture::LTexture()
@@ -178,10 +178,10 @@ void LTexture::setAlpha(Uint8 alpha)
 	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
-void LTexture::render(int x, int y, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip)
+void LTexture::render(double x, double y, SDL_Rect *clip, double angle, SDL_FPoint *center, SDL_RendererFlip flip)
 {
 	// Set rendering space and render to screen
-	SDL_Rect renderQuad = {x, y, mWidth, mHeight};
+	SDL_FRect renderQuad = {x, y, mWidth, mHeight};
 
 	// Set clip rendering dimensions
 	if (clip != NULL)
@@ -191,15 +191,15 @@ void LTexture::render(int x, int y, SDL_Rect *clip, double angle, SDL_Point *cen
 	}
 
 	// Render to screen
-	SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
+	SDL_RenderCopyExF(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
 }
 
-void LTexture::renderScale(int x, int y, int newWidth, int newHeight, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip)
+void LTexture::renderScale(int x, int y, int newWidth, int newHeight, SDL_Rect *clip, double angle, SDL_FPoint *center, SDL_RendererFlip flip)
 {
 	if (mTexture != NULL)
 	{
 		// Xác định vùng vẽ với kích thước tùy chỉnh
-		SDL_Rect renderQuad = {x, y, newWidth, newHeight};
+		SDL_FRect renderQuad = {x, y, newWidth, newHeight};
 
 		// Nếu có clip, lấy kích thước của clip
 		if (clip != NULL)
@@ -209,7 +209,7 @@ void LTexture::renderScale(int x, int y, int newWidth, int newHeight, SDL_Rect *
 		}
 
 		// Render texture với kích thước mới
-		SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
+		SDL_RenderCopyExF(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
 	}
 }
 

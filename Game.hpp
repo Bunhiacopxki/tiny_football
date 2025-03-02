@@ -102,6 +102,7 @@ public:
     LTexture gTextTexture;
     LTexture background;
     LTexture circle;
+    LTexture circle2;
     //Event handler
 	SDL_Event e;
     Mix_Music* currentMusic = nullptr;
@@ -222,6 +223,11 @@ bool Game::loadMedia()
     }
 
     if (!circle.loadFromFile("./img/circle1.png"))
+    {
+        printf("Failed to load circle texture!\n");
+        success = false;
+    }
+    if (!circle2.loadFromFile("./img/circle2.png"))
     {
         printf("Failed to load circle texture!\n");
         success = false;

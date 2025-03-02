@@ -43,12 +43,15 @@ public:
     void takeBall(Dot &mainDot);
     void shoot(double angle, double power);
     bool getKick() { return isWaitingForKick; };
+    bool checkGoal();
     // Gets collision circle
     Circle &getCollider();
 
     void follow(Dot &);
 
     bool isStop();
+
+    void resetBall();
 
     // The X and Y offsets of the dot
     double mPosX, mPosY;
@@ -83,6 +86,21 @@ public:
 
 Ball::Ball()
 {
+    mPosX = SCREEN_WIDTH / 2; // Bóng ở giữa màn hình
+    mPosY = SCREEN_HEIGHT / 2;
+    isPassing = true;
+    isFollowing = 0;
+    // Set collision circle size
+    mCollider.r = BALL_WIDTH / 2;
+    // Initialize the velocity
+    mVelX = 0;
+    mVelY = 0;
+
+    // Move collider relative to the circle
+    shiftColliders();
+}
+
+void Ball::resetBall(){
     mPosX = SCREEN_WIDTH / 2; // Bóng ở giữa màn hình
     mPosY = SCREEN_HEIGHT / 2;
     isPassing = true;
@@ -159,5 +177,25 @@ Circle &Ball::getCollider()
 {
     return mCollider;
 }
+
+// Kiểm tra xem bóng đã vào khung thành chưa
+// Giả sử khung thành bên trái nằm ở phía trái với chiều rộng 50 và chiều cao từ (SCREEN_HEIGHT/2 - 100) đến (SCREEN_HEIGHT/2 + 100)
+// Tương tự, khung thành bên phải nằm ở phía phải
+bool Ball::checkGoal() {
+    int goalWidth = 50;           // Chiều rộng vùng goal (có thể điều chỉnh)
+    int goalTop = SCREEN_HEIGHT/2 - 100;    // Vị trí y trên của khung thành
+    int goalBottom = SCREEN_HEIGHT/2 + 100;   // Vị trí y dưới của khung thành
+
+    // Kiểm tra khung thành bên trái
+    if(mPosX <= goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom) {
+         return true;
+    }
+    // Kiểm tra khung thành bên phải
+    if(mPosX + BALL_WIDTH >= SCREEN_WIDTH - goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom) {
+         return true;
+    }
+    return false;
+}
+
 
 #endif

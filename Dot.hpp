@@ -57,6 +57,8 @@ public:
 
     bool isStop();
 
+    void resetDot(int x, int y);
+
     void setGoalKeeper()
     {
         printf("%d\n", team);
@@ -126,6 +128,11 @@ Dot::Dot(bool isMainDot, int x, int y, int team, int playerid)
     playerID = playerid;
     this->team = team;
     mCollider.r = DOT_HEIGHT * 4;
+    mainCircle = nullptr;
+}
+
+void Dot::resetDot(int x, int y){
+
 }
 
 void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickMeter kickMeter)
@@ -589,30 +596,29 @@ void Dot::switchMainDot(Ball &ball, std::vector<Dot> &players)
 void Dot::render(LTexture &gDotTexture)
 {
     // 🔹 Lấy kích thước thực tế từ texture
-    int dotWidth = gDotTexture.getWidth();
-    int dotHeight = gDotTexture.getHeight();
+    double dotWidth = gDotTexture.getWidth();
+    double dotHeight = gDotTexture.getHeight();
 
     // 🔹 Xác định tâm ảnh
-    SDL_Point center = {dotWidth / 2, dotHeight / 2};
+    SDL_FPoint center = {dotWidth / 2, dotHeight / 2};
 
     // 🔹 Render Dot tại vị trí (mPosX, mPosY) nhưng lấy tâm làm điểm gốc
     gDotTexture.renderScale(mPosX, mPosY, dotWidth, dotHeight, NULL, mAngle, &center, SDL_FLIP_NONE);
 
     // 🔹 Đảm bảo `mainCircle` luôn trùng tâm với Dot
-    // if (mIsMainDot)
-    // {
-    //     if (mainCircle == nullptr)
-    //     {
-    //         printf("mainCircle is nullptr!\n");
-    //     }
-    //     else
-    //     {
-    //         printf("mainCircle is valid!\n");
-    //     }
-    //     printf("mPosX: %d, mPosY: %d, center.x: %d\n", mPosX, mPosY, center.x);
-    //     mainCircle->render(mPosX - (center.x / 2) - 5, mPosY); //,70, 70, NULL, mAngle, &center, SDL_FLIP_NONE); // Tâm của `mainCircle` chính là `mPosX, mPosY`
-    //     printf("long");
-    // }
+    if (mIsMainDot)
+    {
+        if (mainCircle == nullptr)
+        {
+            // printf("mainCircle is nullptr!\n");
+        }
+        else
+        {
+            printf("mainCircle is valid!\n");
+            printf("mPosX: %f, mPosY: %f, center.x: %f\n", mPosX, mPosY, center.x);
+            mainCircle->render(mPosX - (center.x / 2) - 5, mPosY); //,70, 70, NULL, mAngle, &center, SDL_FLIP_NONE); // Tâm của `mainCircle` chính là `mPosX, mPosY`
+        }
+    }
 }
 
 bool Dot::isStop()

@@ -42,37 +42,7 @@ LTimer gameTimer;
 
 int displayTime = 0;
 
-//The application time based timer
-// class LTimer
-// {
-//     public:
-// 		//Initializes variables
-// 		LTimer();
 
-// 		//The various clock actions
-// 		void start();
-// 		void stop();
-// 		void pause();
-// 		void unpause();
-
-// 		//Gets the timer's time
-// 		Uint32 getTicks();
-
-// 		//Checks the status of the timer
-// 		bool isStarted();
-// 		bool isPaused();
-
-//     private:
-// 		//The clock time when the timer started
-// 		Uint32 mStartTicks;
-
-// 		//The ticks stored when the timer was paused
-// 		Uint32 mPausedTicks;
-
-// 		//The timer status
-// 		bool mPaused;
-// 		bool mStarted;
-// };
 
 void Ball::passTo(std::vector<Dot> &players)
 {
@@ -278,6 +248,11 @@ double getDistance(double x1, double y1, double x2, double y2)
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
+void gameReset(Ball& ball, std::vector<Dot>& dots1, std::vector<Dot>& dots2){
+	ball.resetBall();
+	// for
+}
+
 int Game::menu()
 {
 	bool inMenu = true;
@@ -370,16 +345,21 @@ int Game::mainGame()
 
 		for (int i = 0; i < 4; i++)
 		{
-			if (i == 0)
+			if (i == 0)		// Main dot
 			{
 				dots1.push_back(Dot(true, SCREEN_WIDTH / 2 - 175, SCREEN_HEIGHT / 2, 1, 1));
 				mainDot1 = &dots1[i];
+				mainDot1->mainCircle = &circle;
 				dots2.push_back(Dot(true, SCREEN_WIDTH / 2 + 175, SCREEN_HEIGHT / 2, 2, 2));
 				mainDot2 = &dots2[i];
-				continue;
+				mainDot2->mainCircle = &circle2;
 			}
-			dots1.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 1, 0));
-			dots2.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 2, 0));
+			else {		// Others
+				dots1.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 1, 0));
+				dots2.push_back(Dot(false, 4*SCREEN_WIDTH / 5, position[i - 1], 2, 0));
+				dots1[i].mainCircle = &circle;
+				dots2[i].mainCircle = &circle2;
+			}
 		}
 
 	Dot goalkeeper1(false, 10, SCREEN_HEIGHT / 2, 1, 0);
@@ -397,8 +377,8 @@ int Game::mainGame()
 	int frame_char1 = 0;
 	int frameCount2 = 0;
 	int frame_char2 = 0;
-	(*mainDot1).mainCircle = &circle;
-	(*mainDot2).mainCircle = &circle;
+	
+	
 	changePhase(PHASE_2);
 	gameTimer.start(); // Bắt đầu đếm thời gian
 	while( !quit )
@@ -511,6 +491,7 @@ int Game::mainGame()
 			// quit = true; 
 			// Kết thúc game sau 5 phút thực tế
 			//thực hiện gì đó để ngưng game nha ! 
+			return QUIT;
 		}
 		renderScoreboard(0, 10 + frame, displayTime);
 
@@ -544,6 +525,9 @@ int Game::mainGame()
 		// 	// dots2[i].render(gDotTexture[frame_char2]);
 		// }
 		//(*mainDot1).render(gDotTexture[frame_char1]);
+
+		// Render cầu thủ
+		// Team 1
 		for (auto &dot : dots1)
 		{
 			if (dot.isMain())
@@ -555,6 +539,19 @@ int Game::mainGame()
 		}
 
 		goalkeeper1.render(gDotTexture[frame_char1]);
+		
+		// Team 2
+		for (auto &dot : dots2)
+		{
+			if (dot.isMain())
+			{
+				(*mainDot2).render(gDotTexture[frame_char1]);
+			}
+			else
+				dot.render(gDotTexture[frame_char1]);
+		}
+
+		goalkeeper2.render(gDotTexture[frame_char1]);
 
 		// (*mainDot2).render(gDotTexture[frame_char2]);
 		// for (auto &dot : dots2)
@@ -635,7 +632,7 @@ int main( int argc, char* args[] )
 						break;
 					
 					case GAME:
-						if (game.mainGame() == QUIT || game.showEndScreen()) {
+						if (game.mainGame() == QUIT && game.showEndScreen()) {
 							game.close();
 							return 0;
 						}
