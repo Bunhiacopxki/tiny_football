@@ -505,15 +505,16 @@ int Game::mainGame()
 				frame_char1 = 0;
 			}
 		}
-		// if (frameCount2 % 6 == 0)
-		// {
-		// 	if (!(*mainDot2).isStop())
-		// 		frame_char2 = (frame_char2 + 1) % 21; // Cập nhật frame
-		// 	else
-		// 	{
-		// 		frame_char2 = 0;
-		// 	}
-		// }
+
+		if (frameCount2 % 6 == 0)
+		{
+			if (!(*mainDot2).isStop())
+				frame_char2 = (frame_char2 + 1) % 21; // Cập nhật frame
+			else
+			{
+				frame_char2 = 0;
+			}
+		}
 		// printf("check3\n");
 		// for (int i = 0; i < 3; i++)
 		// {
@@ -545,13 +546,13 @@ int Game::mainGame()
 		{
 			if (dot.isMain())
 			{
-				(*mainDot2).render(gDotTexture[frame_char1]);
+				(*mainDot2).render(gDotTexture2[frame_char2]);
 			}
 			else
-				dot.render(gDotTexture[frame_char1]);
+				dot.render(gDotTexture2[frame_char2]);
 		}
 
-		goalkeeper2.render(gDotTexture[frame_char1]);
+		goalkeeper2.render(gDotTexture2[frame_char2]);
 
 		// (*mainDot2).render(gDotTexture[frame_char2]);
 		// for (auto &dot : dots2)
@@ -569,11 +570,12 @@ int Game::mainGame()
 			frameCount1 = 0;
 		}
 		frameCount1++; // Tăng biến đếm
-		// if (frameCount2 % 30 == 0)
-		// {
-		// 	frameCount2 = 0;
-		// }
-		// frameCount2++; // Tăng biến đếm
+		
+		if (frameCount2 % 30 == 0)
+		{
+			frameCount2 = 0;
+		}
+		frameCount2++; // Tăng biến đếm
 		// if (frame > 0)
 		// 	printf("frame: %d", frame);
 		// Ball render
