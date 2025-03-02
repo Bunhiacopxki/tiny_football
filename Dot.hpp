@@ -381,7 +381,8 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
         mCollider.y = mPosY;
         if (mVelX != 0 || mVelY != 0)
         {
-            mAngle = atan2(mVelY, mVelX) * (180.0 / M_PI); // Chuyển radian sang độ
+            if(team == 1) mAngle = atan2(mVelY, mVelX) * (180.0 / M_PI); // Chuyển radian sang độ
+            else mAngle = atan2(mVelY, mVelX) * (180.0 / M_PI) + 180.0;
         }
 
         rac();
@@ -419,7 +420,8 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
         }
         double dx = mainDot.mPosX - mPosX;
         double dy = mainDot.mPosY - mPosY;
-        mAngle = atan2(dy, dx) * (180.0 / M_PI); // 🔹 Xoay Dot phụ về hướng mainDot
+        if(team == 1) mAngle = atan2(dy, dx) * (180.0 / M_PI); // 🔹 Xoay Dot phụ về hướng mainDot
+        else mAngle = atan2(dy, dx) * (180.0 / M_PI) + 180.0;
 
         mMoveTimer -= deltaTime;
 
