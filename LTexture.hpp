@@ -26,6 +26,7 @@ public:
 #if defined(SDL_TTF_MAJOR_VERSION)
 	// Creates image from font string
 	bool loadFromRenderedText(std::string textureText, SDL_Color textColor);
+	bool rac1(TTF_Font* font, std::string textureText, SDL_Color textColor);
 #endif
 
 	// Deallocates texture
@@ -145,6 +146,31 @@ bool LTexture::loadFromRenderedText(std::string textureText, SDL_Color textColor
 
 	// Return success
 	return mTexture != NULL;
+}
+
+bool LTexture::rac1(TTF_Font* font, std::string textureText, SDL_Color textColor)
+{
+	// Giải phóng texture cũ
+    free();
+    
+    // Kết xuất văn bản ra Surface
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, textureText.c_str(), textColor);
+    if (textSurface != NULL)
+    {
+        // Tạo texture từ surface
+        mTexture = SDL_CreateTextureFromSurface(gRenderer, textSurface);
+        mWidth = textSurface->w;
+        mHeight = textSurface->h;
+
+        // Giải phóng surface
+        SDL_FreeSurface(textSurface);
+    }
+    else
+    {
+        printf("Không thể render text! SDL_ttf Error: %s\n", TTF_GetError());
+    }
+
+    return mTexture != NULL;
 }
 #endif
 

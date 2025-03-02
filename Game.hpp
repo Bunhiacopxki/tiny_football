@@ -76,7 +76,8 @@ class Game {
 public:
     // Starts up SDL and creates window
     bool init();
-
+    int RedMark;
+    int BlueMark;
     // Loads media
     bool loadMedia();
 
@@ -114,6 +115,9 @@ bool Game::init()
 {
     // Initialization flag
     bool success = true;
+
+    RedMark = 0;
+    BlueMark = 0;
 
     //Initialize SDL
     if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )
@@ -168,7 +172,7 @@ bool Game::init()
                 }
                 else
                 {
-                    gFont = TTF_OpenFont("lazy.ttf", 28);
+                    gFont = TTF_OpenFont("arial.ttf", 28);
                     if (gFont == NULL)
                     {
                         printf("Không thể tải font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -366,6 +370,12 @@ bool Game::showEndScreen() {
     Button playButton(centerX, SCREEN_HEIGHT * 1 / 2 + buttonHeight * 2, buttonWidth, buttonHeight, play_button);
     changePhase(PHASE_3);
 
+    LTexture redScoreTexture;
+    LTexture blueScoreTexture;
+    TTF_Font* largeFont = TTF_OpenFont("arial.ttf", 360);
+    TTF_Font* resultFont = TTF_OpenFont("arial.ttf", 60);
+    TTF_Font* teamFont = TTF_OpenFont("arial.ttf", 40);
+
     while (running) {
         int mouseX, mouseY;
         while (SDL_PollEvent(&e)) {
@@ -396,6 +406,41 @@ bool Game::showEndScreen() {
 		bgRect.y = 0;
 
 		SDL_RenderCopy(gRenderer, bgTexture, NULL, &bgRect);
+        // Định nghĩa màu chữ
+        SDL_Color textWhite = {255, 255, 255};
+        SDL_Color textGreen = {0, 128, 0};
+        SDL_Color textRed = {255, 36, 0};
+        SDL_Color textBlue = {0, 0, 255};
+
+        // Tạo texture mới với font lớn hơn
+        if (largeFont == NULL || resultFont == NULL) {
+            printf("Không thể tải font lớn! SDL_ttf Error: %s\n", TTF_GetError());
+        } 
+        else {
+            if (redScoreTexture.rac1(resultFont, "RESULT", textGreen)) {
+                redScoreTexture.render(SCREEN_WIDTH / 2 - 120, 50); // Điều chỉnh vị trí hiển thị
+            }
+
+            if (blueScoreTexture.rac1(teamFont, "Team Red", textRed)) {
+                blueScoreTexture.render(SCREEN_WIDTH / 4 + 63, 135); // Điều chỉnh vị trí hiển thị
+            }
+
+            if (blueScoreTexture.rac1(teamFont, "Team Blue", textBlue)) {
+                blueScoreTexture.render(713, 135); // Điều chỉnh vị trí hiển thị
+            }
+
+            if (redScoreTexture.rac1(largeFont, to_string(RedMark), textWhite)) {
+                redScoreTexture.render(SCREEN_WIDTH / 4 + 52, 150); // Điều chỉnh vị trí hiển thị
+            }
+
+            if (redScoreTexture.rac1(largeFont, "-", textWhite)) {
+                redScoreTexture.render(SCREEN_WIDTH / 2 - 57, 135); // Điều chỉnh vị trí hiển thị
+            }
+
+            if (blueScoreTexture.rac1(largeFont, to_string(BlueMark), textWhite)) {
+                blueScoreTexture.render(713, 150); // Điều chỉnh vị trí hiển thị
+            }
+        }
 
 		playButton.render(gRenderer);
 		SDL_RenderPresent(gRenderer);
@@ -403,6 +448,7 @@ bool Game::showEndScreen() {
 
     // Giải phóng tài nguyên
     SDL_DestroyTexture(bgTexture);
+    TTF_CloseFont(largeFont);
     return true;
 }
 

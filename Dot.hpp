@@ -414,6 +414,10 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
             return;
         }
 
+        if (mainDot.keyUP == false && mainDot.keyDOWN == false && mainDot.keyRIGHT == false && mainDot.keyLEFT == false) {
+            return;
+        }
+
         double dx = mainDot.mPosX - mPosX;
         double dy = mainDot.mPosY - mPosY;
         mAngle = atan2(dy, dx) * (180.0 / M_PI); // 🔹 Xoay Dot phụ về hướng mainDot

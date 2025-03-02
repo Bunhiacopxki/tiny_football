@@ -268,6 +268,9 @@ int Game::menu()
 	SDL_Surface *bgSurface = IMG_Load("./img/background.png");
 	SDL_Texture *bgTexture = SDL_CreateTextureFromSurface(gRenderer, bgSurface);
 	SDL_FreeSurface(bgSurface); // Giải phóng surface sau khi chuyển thành texture
+	SDL_Surface* startSurface = IMG_Load("./img/start.jpg");
+	SDL_Texture* startTexture = SDL_CreateTextureFromSurface(gRenderer, startSurface);
+	SDL_FreeSurface(startSurface); // Giải phóng surface sau khi chuyển thành texture
 	int buttonWidth = 250;
 	int buttonHeight = 100;
 	int centerX = (SCREEN_WIDTH - buttonWidth) / 2;
@@ -282,6 +285,7 @@ int Game::menu()
 		{
 			if (e.type == SDL_QUIT)
 			{
+				SDL_DestroyTexture(startTexture);
 				SDL_DestroyTexture(bgTexture);
 				return QUIT;
 			}
@@ -315,6 +319,13 @@ int Game::menu()
 		bgRect.x = (SCREEN_WIDTH - bgRect.w) / 2;
 		bgRect.y = SCREEN_HEIGHT / 2 - buttonHeight * 3;
 
+		SDL_Rect startRect;
+		startRect.w = SCREEN_WIDTH;
+		startRect.h = SCREEN_HEIGHT;
+		startRect.x = 0;
+		startRect.y = 0;
+
+		SDL_RenderCopy(gRenderer, startTexture, NULL, &startRect);
 		SDL_RenderCopy(gRenderer, bgTexture, NULL, &bgRect);
 
 		playButton.render(gRenderer);
@@ -602,7 +613,7 @@ int main( int argc, char* args[] )
 			return false;
 		}
 
-		gFont = TTF_OpenFont("lazy.ttf", 28); // Thay đổi "arial.ttf" thành font có sẵn trong thư mục
+		gFont = TTF_OpenFont("arial.ttf", 28); // Thay đổi "arial.ttf" thành font có sẵn trong thư mục
 		if (gFont == NULL)
 		{
 			printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
