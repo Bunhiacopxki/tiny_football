@@ -105,6 +105,8 @@ public:
     LTexture background;
     LTexture circle;
     LTexture circle2;
+    LTexture rArrow;
+    LTexture lArrow;
     //Event handler
 	SDL_Event e;
     Mix_Music* currentMusic = nullptr;
@@ -247,6 +249,18 @@ bool Game::loadMedia()
     if (!circle2.loadFromFile("./img/circle2.png"))
     {
         printf("Failed to load circle texture!\n");
+        success = false;
+    }
+
+    if (!rArrow.loadFromFile("./img/arblue1.png"))
+    {
+        printf("Failed to load rArrow texture!\n");
+        success = false;
+    }
+
+    if (!lArrow.loadFromFile("./img/arred1.png"))
+    {
+        printf("Failed to load lArrow texture!\n");
         success = false;
     }
 
