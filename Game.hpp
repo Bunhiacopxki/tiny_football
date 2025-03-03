@@ -98,6 +98,7 @@ public:
     Mix_Chunk* loadSoundEffect(const std::string& path);
     
     vector<LTexture> gDotTexture;
+    vector<LTexture> gDotTexture2;
     // LTexture gDotTexture;
     vector<LTexture> gBallTexture;
     LTexture gTextTexture;
@@ -110,6 +111,7 @@ public:
     GamePhase phase = PHASE_1;
     // Mix_Chunk* gameOverSound;
 };
+
 
 bool Game::init()
 {
@@ -199,6 +201,17 @@ bool Game::loadMedia()
         if (!gDotTexture[i].loadFromFile(path))
         {
             printf("Failed to load red_char texture: %s\n", path.c_str());
+            success = false;
+        }
+    }
+
+    gDotTexture2.resize(21);
+    for (int i = 0; i < 21; i++)
+    {
+        std::string path = "./img/blue_char/2." + to_string(i) + ".png"; // Tên file: ball0.png, ball1.png, ...
+        if (!gDotTexture2[i].loadFromFile(path))
+        {
+            printf("Failed to load blue_char texture: %s\n", path.c_str());
             success = false;
         }
     }
@@ -392,6 +405,7 @@ bool Game::showEndScreen() {
 			{
 				SDL_GetMouseState(&mouseX, &mouseY);
 				if (playButton.isClicked(mouseX, mouseY))
+                    RedMark = BlueMark = 0;
 					return false;
 			}
         }
