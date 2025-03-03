@@ -78,8 +78,8 @@ public:
         }
     }
 
-    int getX() { return mPosX; }
-    int getY() { return mPosY; }
+    double getX() { return mPosX; }
+    double getY() { return mPosY; }
     void switchMainDot(Ball &ball, std::vector<Dot> &players);
     void switchMainDotHelp(Dot *newDot);
     bool isMain() { return mIsMainDot; }
@@ -135,6 +135,8 @@ Dot::Dot(bool isMainDot, int x, int y, int team, int playerid)
 
 void Dot::resetDot(int x, int y)
 {
+    mPosX = x;
+    mPosY = y;
 }
 
 void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickMeter kickMeter)
@@ -397,19 +399,22 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
         mCollider.y = mPosY;
         if (mVelX != 0 || mVelY != 0)
         {
-            mAngle = atan2(mVelY, mVelX) * (180.0 / M_PI); // Chuyển radian sang độ
+            if (team == 1)
+                mAngle = atan2(mVelY, mVelX) * (180.0 / M_PI); // Chuyển radian sang độ
+            else
+                mAngle = atan2(mVelY, mVelX) * (180.0 / M_PI) + 180.0;
         }
 
         rac();
     }
     else if (goalkeeper)
     {
-        if (mPosY < SCREEN_HEIGHT / 2 - 20 * DOT_VEL_SLOW || mPosY > SCREEN_HEIGHT / 2 + 20 * DOT_VEL_SLOW)
-        {
-            mVelY = -mVelY;
-        }
+        // if (mPosY < SCREEN_HEIGHT / 2 - 20 * DOT_VEL_SLOW || mPosY > SCREEN_HEIGHT / 2 + 20 * DOT_VEL_SLOW)
+        // {
+        //     mVelY = -mVelY;
+        // }
 
-        mPosY += mVelY;
+        // mPosY += mVelY;
         // Kiểm tra đội nào
         if (team == 1)
         {
@@ -434,9 +439,13 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
         {
             return;
         }
+
         double dx = mainDot.mPosX - mPosX;
         double dy = mainDot.mPosY - mPosY;
-        mAngle = atan2(dy, dx) * (180.0 / M_PI); // 🔹 Xoay Dot phụ về hướng mainDot
+        if (team == 1)
+            mAngle = atan2(dy, dx) * (180.0 / M_PI); // 🔹 Xoay Dot phụ về hướng mainDot
+        else
+            mAngle = atan2(dy, dx) * (180.0 / M_PI) + 180.0;
 
         mMoveTimer -= deltaTime;
 

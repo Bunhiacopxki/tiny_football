@@ -28,6 +28,8 @@ enum RETURNSYMBOL
 int SCREEN_WIDTH = 1280;
 int SCREEN_HEIGHT = 780;
 
+int WindSpeed = 0;
+
 // The window we'll be rendering to
 SDL_Window *gWindow = NULL;
 
@@ -41,6 +43,10 @@ const int DISPLAY_TIME_MAX = 5400; // 90 phút hiển thị
 LTimer gameTimer;
 
 int displayTime = 0;
+
+int position[] = {static_cast<int>(SCREEN_HEIGHT / 4),
+				  static_cast<int>(SCREEN_HEIGHT / 2),
+				  static_cast<int>(3 * SCREEN_HEIGHT / 4)};
 
 void Ball::passTo(std::vector<Dot> &players)
 {
@@ -103,7 +109,7 @@ void Ball::shoot(double angle, double power)
 		return;
 	mVelX = power * cos(angle);
 	mVelY = power * sin(angle);
-	printf("PassTo called: angle = %f, power = %f,sin = %f, cos = %f, ballVelX= %f, ballVelY = %f\n", angle, power, sin(angle), cos(angle), mVelX, mVelY);
+	// printf("PassTo called: angle = %f, power = %f,sin = %f, cos = %f, ballVelX= %f, ballVelY = %f\n", angle, power, sin(angle), cos(angle), mVelX, mVelY);
 	isShooting = true;
 	owner = nullptr;
 	// teamPossessing = -1;
@@ -111,7 +117,7 @@ void Ball::shoot(double angle, double power)
 	lastShootTime = SDL_GetTicks(); // Đánh dấu thời điểm sut
 }
 
-void Ball::update(Dot &mainDot, std::vector<Dot> &players)
+int Ball::update(Dot &mainDot, std::vector<Dot> &players, Dot &goalkeeper)
 {
 	if (isPassing)
 	{
@@ -127,7 +133,7 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 			passedSegments = currentSegment;
 			double factor = 1.0 - (passedSegments * 0.05);
 			factor = std::max(0.05, factor); // Đảm bảo không giảm quá mức
-			mVelX = mVelX * factor;
+			mVelX = mVelX * factor + WindSpeed;
 			mVelY = mVelY * factor;
 		}
 
@@ -150,7 +156,7 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 	{
 		mPosX += mVelX;
 		mPosY += mVelY;
-		mVelX *= 0.95;
+		mVelX *= 0.95 + WindSpeed;
 		mVelY *= 0.95;
 		if ((fabs(mVelX) < 0.02 && fabs(mVelY) < 0.02))
 		{
@@ -167,6 +173,13 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 	{
 		passedSegments = 0;
 	}
+	// Check vao
+	int goal = checkGoal(goalkeeper);
+	if (goal != 0)
+	{
+		return goal;
+	}
+
 	if (owner == nullptr)
 	{
 		// printf("check");
@@ -180,6 +193,7 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 	// {
 	// 	this->followPlayer(*owner);
 	// }
+	return 0;
 }
 
 bool Ball::takeBall(Dot &mainDot)
@@ -272,6 +286,38 @@ void Ball::follow(Dot &player)
 	shiftColliders();
 }
 
+// Kiểm tra xem bóng đã vào khung thành chưa
+// Giả sử khung thành bên trái nằm ở phía trái với chiều rộng 50 và chiều cao từ (SCREEN_HEIGHT/2 - 100) đến (SCREEN_HEIGHT/2 + 100)
+// Tương tự, khung thành bên phải nằm ở phía phải
+int Ball::checkGoal(Dot &goalkeeper)
+{
+	int goalWidth = 50;						  // Chiều rộng vùng goal (có thể điều chỉnh)
+	int goalTop = SCREEN_HEIGHT / 2 - 100;	  // Vị trí y trên của khung thành
+	int goalBottom = SCREEN_HEIGHT / 2 + 140; // Vị trí y dưới của khung thành
+
+	// Kiểm tra khung thành bên trái
+	if (mPosX <= goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom)
+	{
+		// printf("ballX: %lf\n", mPosX);
+		// printf("goalkeeperX: %lf\n", goalkeeper.getX());
+		// printf("ballY: %lf\n", mPosY);
+		// printf("goalkeeperY: %lf\n", goalkeeper.getY());
+		if ((mPosY <= goalkeeper.getY() + 60.0) && (mPosY >= goalkeeper.getY() - 10.0))
+			return -1;
+		return 1;
+	}
+	// Kiểm tra khung thành bên phải
+	if (mPosX + BALL_WIDTH >= SCREEN_WIDTH - goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom)
+	{
+		// printf("ballY: %lf\n", mPosY);
+		// printf("goalkeeperY: %lf\n", goalkeeper.getY());
+		if ((mPosY <= goalkeeper.getY() + 60.0) && (mPosY >= goalkeeper.getY() - 10.0))
+			return -1;
+		return 2;
+	}
+	return 0;
+}
+
 double getDistance(double x1, double y1, double x2, double y2)
 {
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
@@ -280,7 +326,28 @@ double getDistance(double x1, double y1, double x2, double y2)
 void gameReset(Ball &ball, std::vector<Dot> &dots1, std::vector<Dot> &dots2)
 {
 	ball.resetBall();
-	// for
+	for (int i = 0; i < 4; i++)
+	{
+		if (dots1[i].mIsMainDot)
+		{
+			dots1[i].resetDot(SCREEN_WIDTH / 2 - 175, SCREEN_HEIGHT / 2);
+		}
+		else
+		{
+			dots1[i].resetDot(SCREEN_WIDTH / 5, position[i - 1]);
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		if (dots2[i].mIsMainDot)
+		{
+			dots2[i].resetDot(SCREEN_WIDTH / 2 + 175, SCREEN_HEIGHT / 2);
+		}
+		else
+		{
+			dots2[i].resetDot(4 * SCREEN_WIDTH / 5, position[i - 1]);
+		}
+	}
 }
 
 int Game::menu()
@@ -298,6 +365,9 @@ int Game::menu()
 	SDL_Surface *bgSurface = IMG_Load("./img/background.png");
 	SDL_Texture *bgTexture = SDL_CreateTextureFromSurface(gRenderer, bgSurface);
 	SDL_FreeSurface(bgSurface); // Giải phóng surface sau khi chuyển thành texture
+	SDL_Surface *startSurface = IMG_Load("./img/start.jpg");
+	SDL_Texture *startTexture = SDL_CreateTextureFromSurface(gRenderer, startSurface);
+	SDL_FreeSurface(startSurface); // Giải phóng surface sau khi chuyển thành texture
 	int buttonWidth = 250;
 	int buttonHeight = 100;
 	int centerX = (SCREEN_WIDTH - buttonWidth) / 2;
@@ -312,6 +382,7 @@ int Game::menu()
 		{
 			if (e.type == SDL_QUIT)
 			{
+				SDL_DestroyTexture(startTexture);
 				SDL_DestroyTexture(bgTexture);
 				return QUIT;
 			}
@@ -346,6 +417,13 @@ int Game::menu()
 		bgRect.x = (SCREEN_WIDTH - bgRect.w) / 2;
 		bgRect.y = SCREEN_HEIGHT / 2 - buttonHeight * 3;
 
+		SDL_Rect startRect;
+		startRect.w = SCREEN_WIDTH;
+		startRect.h = SCREEN_HEIGHT;
+		startRect.x = 0;
+		startRect.y = 0;
+
+		SDL_RenderCopy(gRenderer, startTexture, NULL, &startRect);
 		SDL_RenderCopy(gRenderer, bgTexture, NULL, &bgRect);
 
 		playButton.render(gRenderer);
@@ -370,9 +448,6 @@ int Game::mainGame()
 
 	// Ball
 	Ball ball;
-	int position[] = {static_cast<int>(SCREEN_HEIGHT / 4),
-					  static_cast<int>(SCREEN_HEIGHT / 2),
-					  static_cast<int>(3 * SCREEN_HEIGHT / 4)};
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -381,14 +456,14 @@ int Game::mainGame()
 			dots1.push_back(Dot(true, SCREEN_WIDTH / 2 - 175, SCREEN_HEIGHT / 2, 1, 1));
 			mainDot1 = &dots1[i];
 			mainDot1->mainCircle = &circle;
-			dots2.push_back(Dot(true, SCREEN_WIDTH / 2 + 175, SCREEN_HEIGHT / 2, 2, 2));
+			dots2.push_back(Dot(true, SCREEN_WIDTH / 2 + 136, SCREEN_HEIGHT / 2, 2, 2));
 			mainDot2 = &dots2[i];
 			mainDot2->mainCircle = &circle2;
 		}
 		else
 		{ // Others
 			dots1.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 1, 0));
-			dots2.push_back(Dot(false, 4 * SCREEN_WIDTH / 5, position[i - 1], 2, 0));
+			dots2.push_back(Dot(false, 4 * SCREEN_WIDTH / 5 - 39, position[i - 1], 2, 0));
 			dots1[i].mainCircle = &circle;
 			dots2[i].mainCircle = &circle2;
 		}
@@ -410,12 +485,37 @@ int Game::mainGame()
 	int frameCount2 = 0;
 	int frame_char2 = 0;
 
+	double Windtime = 5;
+	// int wind = 0;
+
 	changePhase(PHASE_2);
 	gameTimer.start(); // Bắt đầu đếm thời gian
+
+	SDL_Texture *goalTexture = NULL;
+	bool showGoal = false;
+	Uint32 goalDisplayTime = 0;
+	const Uint32 GOAL_DURATION = 2000; // Hiển thị trong 2 giây
+	SDL_Surface *goalSurface = IMG_Load("./img/goal.jpg");
+	goalTexture = SDL_CreateTextureFromSurface(gRenderer, goalSurface);
+	SDL_FreeSurface(goalSurface);
+
 	while (!quit)
 	{
 		Uint32 currentTime = SDL_GetTicks();
 		deltaTime = (currentTime - lastTime) / 1000.0;
+		Windtime -= deltaTime;
+		if (Windtime <= 0)
+		{
+			int dir = rand();
+			if (dir & 1)
+			{
+				WindSpeed = rand() % 5;
+			}
+			else
+				WindSpeed = -rand() % 5;
+			Windtime = 5;
+			// printf("Wind Speed: %d", WindSpeed);
+		}
 		lastTime = currentTime;
 		// Handle events on queue
 		while (SDL_PollEvent(&e) != 0)
@@ -459,13 +559,11 @@ int Game::mainGame()
 		}
 		else
 		{
-
 			// Move the dot
 			(*mainDot1).move((*mainDot1), dots1, deltaTime);
 			(*mainDot2).move((*mainDot2), dots2, deltaTime);
 			for (int i = 0; i < 4; i++)
 			{
-
 				if (!dots1[i].isMain())
 				{
 					dots1[i].move((*mainDot1), dots1, deltaTime);
@@ -509,8 +607,38 @@ int Game::mainGame()
 				}
 			}
 
-			ball.update(*mainDot1, dots1);
-			ball.update(*mainDot2, dots2);
+			// Check goal and move ball
+			int goal = ball.update(*mainDot1, dots1, goalkeeper2);
+			if (goal != 0)
+			{
+				gameReset(ball, dots1, dots2);
+				if (goal == 1)
+				{
+					showGoal = true;
+					goalDisplayTime = SDL_GetTicks();
+					BlueMark++;
+				}
+				else if (goal == 2)
+				{
+					showGoal = true;
+					goalDisplayTime = SDL_GetTicks();
+					RedMark++;
+				}
+			}
+			// ball.update(*mainDot2, dots2);
+			//     Move the ball
+			//   ball.move();
+			//   Move the ball
+			//  if (ball.isFollowing == 1)
+			//  {
+			//  	ball.follow(*mainDot1);
+			//  }
+			//  else if (ball.isFollowing == 2)
+			//  {
+			//  	ball.follow(*mainDot2);
+			//  }
+			//  else
+			//  	ball.move();
 		}
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
@@ -527,7 +655,7 @@ int Game::mainGame()
 			// thực hiện gì đó để ngưng game nha !
 			return QUIT;
 		}
-		renderScoreboard(0, 10 + frame, displayTime);
+		renderScoreboard(RedMark, BlueMark, displayTime);
 
 		// Render objects
 		if (frameCount1 % 6 == 0)
@@ -539,15 +667,16 @@ int Game::mainGame()
 				frame_char1 = 0;
 			}
 		}
-		// if (frameCount2 % 6 == 0)
-		// {
-		// 	if (!(*mainDot2).isStop())
-		// 		frame_char2 = (frame_char2 + 1) % 21; // Cập nhật frame
-		// 	else
-		// 	{
-		// 		frame_char2 = 0;
-		// 	}
-		// }
+
+		if (frameCount2 % 6 == 0)
+		{
+			if (!(*mainDot2).isStop())
+				frame_char2 = (frame_char2 + 1) % 21; // Cập nhật frame
+			else
+			{
+				frame_char2 = 0;
+			}
+		}
 		// printf("check3\n");
 		// for (int i = 0; i < 3; i++)
 		// {
@@ -579,13 +708,13 @@ int Game::mainGame()
 		{
 			if (dot.isMain())
 			{
-				(*mainDot2).render(gDotTexture[frame_char1]);
+				(*mainDot2).render(gDotTexture2[frame_char2]);
 			}
 			else
-				dot.render(gDotTexture[frame_char1]);
+				dot.render(gDotTexture2[frame_char2]);
 		}
 
-		goalkeeper2.render(gDotTexture[frame_char1]);
+		goalkeeper2.render(gDotTexture2[frame_char2]);
 
 		// (*mainDot2).render(gDotTexture[frame_char2]);
 		// for (auto &dot : dots2)
@@ -603,19 +732,46 @@ int Game::mainGame()
 			frameCount1 = 0;
 		}
 		frameCount1++; // Tăng biến đếm
-		// if (frameCount2 % 30 == 0)
-		// {
-		// 	frameCount2 = 0;
-		// }
-		// frameCount2++; // Tăng biến đếm
+
+		if (frameCount2 % 30 == 0)
+		{
+			frameCount2 = 0;
+		}
+		frameCount2++; // Tăng biến đếm
 		// if (frame > 0)
 		// 	printf("frame: %d", frame);
+		// wind render
+		// if(frameCount1 == 1) wind++;
+		// if(wind > 50) wind = -1*wind;
+		// >10 thì 622, <10 thì 630
+		int x_arrow = (abs(WindSpeed) < 10) ? 630 : 622;
+		if (WindSpeed != 0)
+			renderText(to_string(abs(WindSpeed)), x_arrow, 2);
+		if (WindSpeed < 0)
+			rArrow.render(624, 20);
+		else if (WindSpeed > 0)
+			lArrow.render(622, 20);
+
 		// Ball render
 		ball.render(gBallTexture[frame]);
 		kickMeter.render(gRenderer, ball); // Vẽ thanh lực sút
+		if (showGoal)
+		{
+			Uint32 currentTime = SDL_GetTicks();
+			if (currentTime - goalDisplayTime < GOAL_DURATION)
+			{
+				SDL_Rect goalRect = {0, SCREEN_HEIGHT / 4, SCREEN_WIDTH, 250};
+				SDL_RenderCopy(gRenderer, goalTexture, NULL, &goalRect);
+			}
+			else
+			{
+				showGoal = false;
+			}
+		}
 		// Update screen
 		SDL_RenderPresent(gRenderer);
 	}
+	SDL_DestroyTexture(goalTexture);
 	return SUCCESS;
 }
 
@@ -635,7 +791,7 @@ int main(int argc, char *args[])
 			return false;
 		}
 
-		gFont = TTF_OpenFont("lazy.ttf", 28); // Thay đổi "arial.ttf" thành font có sẵn trong thư mục
+		gFont = TTF_OpenFont("arial.ttf", 28); // Thay đổi "arial.ttf" thành font có sẵn trong thư mục
 		if (gFont == NULL)
 		{
 			printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
