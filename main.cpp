@@ -34,15 +34,13 @@ SDL_Window *gWindow = NULL;
 // The window renderer
 SDL_Renderer *gRenderer = NULL;
 
-TTF_Font* gFont = NULL; // Khai báo biến toàn cục
-LTexture gTextTexture; // Texture cho văn bản
-const int GAME_DURATION = 300; // 5 phút thực tế
+TTF_Font *gFont = NULL;			   // Khai báo biến toàn cục
+LTexture gTextTexture;			   // Texture cho văn bản
+const int GAME_DURATION = 300;	   // 5 phút thực tế
 const int DISPLAY_TIME_MAX = 5400; // 90 phút hiển thị
 LTimer gameTimer;
 
 int displayTime = 0;
-
-
 
 void Ball::passTo(std::vector<Dot> &players)
 {
@@ -94,7 +92,7 @@ void Ball::passTo(std::vector<Dot> &players)
 		isFollowing = 0;
 		owner = nullptr;
 		isPassing = true;
-		teamPossessing = -1;
+		// teamPossessing = -1;
 		lastPassTime = SDL_GetTicks(); // Đánh dấu thời điểm chuyền
 	}
 }
@@ -108,6 +106,8 @@ void Ball::shoot(double angle, double power)
 	printf("PassTo called: angle = %f, power = %f,sin = %f, cos = %f, ballVelX= %f, ballVelY = %f\n", angle, power, sin(angle), cos(angle), mVelX, mVelY);
 	isShooting = true;
 	owner = nullptr;
+	// teamPossessing = -1;
+	isFollowing = 0;
 	lastShootTime = SDL_GetTicks(); // Đánh dấu thời điểm sut
 }
 
@@ -171,7 +171,7 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 	{
 		// printf("check");
 		move();
-		mainDot.switchMainDot(*this, players);
+		// mainDot.switchMainDot(*this, players);
 	}
 	if (owner != nullptr && *owner == mainDot)
 	{
@@ -182,26 +182,55 @@ void Ball::update(Dot &mainDot, std::vector<Dot> &players)
 	// }
 }
 
-void Ball::takeBall(Dot &mainDot)
+bool Ball::takeBall(Dot &mainDot)
 {
-	if (owner)
-	{
-		return;
-	}
 	Uint32 currentTime = SDL_GetTicks(); // Lấy thời gian hiện tại
 	double distance = getDistance(mPosX, mPosY, mainDot.getX(), mainDot.getY());
-	double collisionDistance = mCollider.r + (mainDot.mCollider.r - mainDot.DOT_HEIGHT * 3); // vì r của cầu thủ lúc đầu set bằng 4 lần chiều cao cầu thủ nên t -3 lần đi
+	double collisionDistance = mCollider.r + (mainDot.mCollider.r - mainDot.DOT_HEIGHT * 3);
+
 	if (distance <= collisionDistance && (currentTime - lastPassTime >= 500) && (currentTime - lastShootTime >= 500))
-	{ // Khi bóng chạm Dot
+	{
+		// Nếu bóng chưa có chủ, đội đầu tiên chạm bóng sẽ sở hữu ngay
+		if (owner == nullptr)
+		{
+			owner = &mainDot;
+			if (teamPossessing != mainDot.team) // Lần đầu tiên có đội giữ bóng
+			{
+				teamPossessing = mainDot.team;
+				possessionStartTime = currentTime; // Bắt đầu tính thời gian kiểm soát
+			}
+			isPassing = false;
+			isFollowing = mainDot.team;
+
+			// Đặt bóng gần chân cầu thủ
+			mPosX = mainDot.getX() + Dot::DOT_WIDTH / 4;
+			mPosY = mainDot.getY() + Dot::DOT_HEIGHT / 2;
+			return true;
+		}
+
+		// Nếu cùng đội thì không thay đổi gì (giữ bóng bình thường)
+		if (owner->team == mainDot.team)
+			return false;
+
+		// Nếu đội khác muốn cướp bóng, kiểm tra thời gian kiểm soát
+		Uint32 teamPossessionTime = currentTime - possessionStartTime;
+		if (teamPossessionTime < 3000) // Chưa đủ 3 giây thì không cho cướp
+			return false;
+
+		// Đủ điều kiện cướp bóng
 		owner = &mainDot;
+		teamPossessing = mainDot.team;
+		possessionStartTime = currentTime; // Đặt lại thời gian kiểm soát bóng cho đội mới
 		isPassing = false;
-		teamPossessing = mainDot.team; // Gán đội giữ bóng
 		isFollowing = mainDot.team;
+
 		// Đặt bóng gần chân cầu thủ
 		mPosX = mainDot.getX() + Dot::DOT_WIDTH / 4;
 		mPosY = mainDot.getY() + Dot::DOT_HEIGHT / 2;
-		// printf("checkteam: %d", mainDot.team);
+
+		return true;
 	}
+	return false;
 }
 
 void Ball::follow(Dot &player)
@@ -248,7 +277,8 @@ double getDistance(double x1, double y1, double x2, double y2)
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-void gameReset(Ball& ball, std::vector<Dot>& dots1, std::vector<Dot>& dots2){
+void gameReset(Ball &ball, std::vector<Dot> &dots1, std::vector<Dot> &dots2)
+{
 	ball.resetBall();
 	// for
 }
@@ -298,8 +328,9 @@ int Game::menu()
 			if (e.type == SDL_MOUSEBUTTONDOWN)
 			{
 				SDL_GetMouseState(&mouseX, &mouseY);
-				if (playButton.isClicked(mouseX, mouseY)) {
-                    return GAME;
+				if (playButton.isClicked(mouseX, mouseY))
+				{
+					return GAME;
 				}
 				else if (instructionButton.isClicked(mouseX, mouseY))
 					return INSTRUCTION;
@@ -330,7 +361,7 @@ int Game::mainGame()
 {
 	// Main loop flag
 	bool quit = false;
-    // Event handler
+	// Event handler
 	Dot *mainDot1 = nullptr;
 	Dot *mainDot2 = nullptr;
 	std::vector<Dot> dots1; // Danh sách dot 1
@@ -339,28 +370,29 @@ int Game::mainGame()
 
 	// Ball
 	Ball ball;
-	int position[] = { static_cast<int>(SCREEN_HEIGHT / 4), 
-		static_cast<int>(SCREEN_HEIGHT / 2), 
-		static_cast<int>(3 * SCREEN_HEIGHT / 4) };
+	int position[] = {static_cast<int>(SCREEN_HEIGHT / 4),
+					  static_cast<int>(SCREEN_HEIGHT / 2),
+					  static_cast<int>(3 * SCREEN_HEIGHT / 4)};
 
-		for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
+	{
+		if (i == 0) // Main dot
 		{
-			if (i == 0)		// Main dot
-			{
-				dots1.push_back(Dot(true, SCREEN_WIDTH / 2 - 175, SCREEN_HEIGHT / 2, 1, 1));
-				mainDot1 = &dots1[i];
-				mainDot1->mainCircle = &circle;
-				dots2.push_back(Dot(true, SCREEN_WIDTH / 2 + 175, SCREEN_HEIGHT / 2, 2, 2));
-				mainDot2 = &dots2[i];
-				mainDot2->mainCircle = &circle2;
-			}
-			else {		// Others
-				dots1.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 1, 0));
-				dots2.push_back(Dot(false, 4*SCREEN_WIDTH / 5, position[i - 1], 2, 0));
-				dots1[i].mainCircle = &circle;
-				dots2[i].mainCircle = &circle2;
-			}
+			dots1.push_back(Dot(true, SCREEN_WIDTH / 2 - 175, SCREEN_HEIGHT / 2, 1, 1));
+			mainDot1 = &dots1[i];
+			mainDot1->mainCircle = &circle;
+			dots2.push_back(Dot(true, SCREEN_WIDTH / 2 + 175, SCREEN_HEIGHT / 2, 2, 2));
+			mainDot2 = &dots2[i];
+			mainDot2->mainCircle = &circle2;
 		}
+		else
+		{ // Others
+			dots1.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 1, 0));
+			dots2.push_back(Dot(false, 4 * SCREEN_WIDTH / 5, position[i - 1], 2, 0));
+			dots1[i].mainCircle = &circle;
+			dots2[i].mainCircle = &circle2;
+		}
+	}
 
 	Dot goalkeeper1(false, 10, SCREEN_HEIGHT / 2, 1, 0);
 	goalkeeper1.setGoalKeeper();
@@ -377,11 +409,10 @@ int Game::mainGame()
 	int frame_char1 = 0;
 	int frameCount2 = 0;
 	int frame_char2 = 0;
-	
-	
+
 	changePhase(PHASE_2);
 	gameTimer.start(); // Bắt đầu đếm thời gian
-	while( !quit )
+	while (!quit)
 	{
 		Uint32 currentTime = SDL_GetTicks();
 		deltaTime = (currentTime - lastTime) / 1000.0;
@@ -399,6 +430,7 @@ int Game::mainGame()
 			(*mainDot1).handleEvent(e, ball, dots1, kickMeter);
 			(*mainDot2).handleEvent(e, ball, dots2, kickMeter);
 		}
+
 		for (int i = 0; i < 4; i++)
 		{
 			if (dots1[i].isMain())
@@ -446,51 +478,53 @@ int Game::mainGame()
 
 			goalkeeper1.move((*mainDot1), dots1, deltaTime);
 			goalkeeper2.move((*mainDot2), dots2, deltaTime);
-
-			for (auto &player : dots1)
-			{
-				ball.takeBall(player);
-			}
+			if (!ball.owner)
+				ball.balltaken = false;
 			// Cập nhật bóng dựa trên cầu thủ từ cả hai đội
 			for (auto &player : dots1)
 			{
-				ball.takeBall(player);
+				ball.balltaken = ball.takeBall(player) ? false : true;
+
+				if (!ball.balltaken && ball.owner && *ball.owner == player)
+				{
+					printf("check\n");
+					ball.balltaken = true;
+					mainDot1->switchMainDotHelp(ball.owner);
+				}
+				// ball.balltaken = ball.takeBall(player) ? false : true;
+				// if (!ball.balltaken && ball.owner && *ball.owner == player)
+				// {
+				// 	printf("check\n");
+				// 	ball.balltaken = true;
+				// 	mainDot1->switchMainDotHelp(ball.owner);
+				// }
 			}
 			for (auto &player : dots2)
 			{
-				ball.takeBall(player);
+				ball.balltaken = ball.takeBall(player) ? false : true;
+				if (!ball.balltaken && ball.owner && *ball.owner == player)
+				{
+					ball.balltaken = true;
+					mainDot2->switchMainDotHelp(ball.owner);
+				}
 			}
 
 			ball.update(*mainDot1, dots1);
-			// ball.update(*mainDot2, dots2);
-			//     Move the ball
-			//   ball.move();
-			//   Move the ball
-			//  if (ball.isFollowing == 1)
-			//  {
-			//  	ball.follow(*mainDot1);
-			//  }
-			//  else if (ball.isFollowing == 2)
-			//  {
-			//  	ball.follow(*mainDot2);
-			//  }
-			//  else
-			//  	ball.move();
+			ball.update(*mainDot2, dots2);
 		}
-		// printf("check\n");
-		//  Clear screen
-		SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-		SDL_RenderClear( gRenderer );
+		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(gRenderer);
 
-		background.renderScale(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+		background.renderScale(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		int timeElapsed = gameTimer.getTicks() / 1000;
 		// displayTime = (timeElapsed * DISPLAY_TIME_MAX) / GAME_DURATION;
 		displayTime = (SDL_GetTicks() / 1000.0) * (DISPLAY_TIME_MAX / (double)GAME_DURATION);
 
-		if (timeElapsed >= GAME_DURATION) {
-			// quit = true; 
+		if (timeElapsed >= GAME_DURATION)
+		{
+			// quit = true;
 			// Kết thúc game sau 5 phút thực tế
-			//thực hiện gì đó để ngưng game nha ! 
+			// thực hiện gì đó để ngưng game nha !
 			return QUIT;
 		}
 		renderScoreboard(0, 10 + frame, displayTime);
@@ -539,7 +573,7 @@ int Game::mainGame()
 		}
 
 		goalkeeper1.render(gDotTexture[frame_char1]);
-		
+
 		// Team 2
 		for (auto &dot : dots2)
 		{
@@ -580,13 +614,12 @@ int Game::mainGame()
 		ball.render(gBallTexture[frame]);
 		kickMeter.render(gRenderer, ball); // Vẽ thanh lực sút
 		// Update screen
-		SDL_RenderPresent( gRenderer );
+		SDL_RenderPresent(gRenderer);
 	}
 	return SUCCESS;
 }
 
-
-int main( int argc, char* args[] )
+int main(int argc, char *args[])
 {
 	Game game;
 	// Start up SDL and create window
@@ -614,32 +647,35 @@ int main( int argc, char* args[] )
 			printf("Failed to load media!\n");
 		}
 		else
-		{	
+		{
 			bool running = true;
-			while (running) {
+			while (running)
+			{
 				int menuRet = game.menu();
 				switch (menuRet)
 				{
-					case QUIT:
+				case QUIT:
+					game.close();
+					return 0;
+
+				case INSTRUCTION:
+					if (game.showInstructions() == QUIT)
+					{
 						game.close();
 						return 0;
-					
-					case INSTRUCTION:
-						if (game.showInstructions() == QUIT) {
-							game.close();
-							return 0;
-						}
-						break;
-					
-					case GAME:
-						if (game.mainGame() == QUIT && game.showEndScreen()) {
-							game.close();
-							return 0;
-						}
-						break;
+					}
+					break;
 
-					default:
-						break;
+				case GAME:
+					if (game.mainGame() == QUIT && game.showEndScreen())
+					{
+						game.close();
+						return 0;
+					}
+					break;
+
+				default:
+					break;
 				}
 			}
 		}

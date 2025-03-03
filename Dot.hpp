@@ -27,14 +27,14 @@ public:
     static const int DOT_HEIGHT = 20;
     static const int RANGE = 200;
 
-    //Maximum axis velocity of the dot
+    // Maximum axis velocity of the dot
     static const int DOT_VEL = 3;
     static const int DOT_VEL_SLOW = 5;
 
     friend class Ball;
-    
+
     double mAngle;
-    //Initializes the variables
+    // Initializes the variables
     Dot(bool isMainDot, int x, int y, int team = 0, int playerid = 0);
 
     // Takes key presses and adjusts the dot's velocity
@@ -81,20 +81,22 @@ public:
     int getX() { return mPosX; }
     int getY() { return mPosY; }
     void switchMainDot(Ball &ball, std::vector<Dot> &players);
+    void switchMainDotHelp(Dot *newDot);
     bool isMain() { return mIsMainDot; }
     bool operator==(const Dot &other) const
     {
         return this == &other;
     }
     int getTeam() { return team; }
+    void setMain(bool maindot) { this->mIsMainDot = maindot; }
 
-private:
+    // private:
     // The X and Y offsets of the dot
     double mPosX, mPosY;
 
-    //The velocity of the dot
+    // The velocity of the dot
     double mVelX, mVelY;
-    bool mIsMainDot;  // Xác định dot chính
+    bool mIsMainDot; // Xác định dot chính
     int playerID;    // xác định dạng player chính phụ
     double mMoveTimer = 0.5;
     int team; // xác định màu cho 2 bên
@@ -131,8 +133,8 @@ Dot::Dot(bool isMainDot, int x, int y, int team, int playerid)
     mainCircle = nullptr;
 }
 
-void Dot::resetDot(int x, int y){
-
+void Dot::resetDot(int x, int y)
+{
 }
 
 void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickMeter kickMeter)
@@ -145,21 +147,21 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
     {
         if (playerID == 1)
         {
-            //Adjust the velocity
-            switch( e.key.keysym.sym )
+            // Adjust the velocity
+            switch (e.key.keysym.sym)
             {
-            case SDLK_w: 
+            case SDLK_w:
                 keyUP = true;
-				break;
-            case SDLK_s: 
+                break;
+            case SDLK_s:
                 keyDOWN = true;
-				break;
-            case SDLK_a: 
+                break;
+            case SDLK_a:
                 keyLEFT = true;
-				break;
-            case SDLK_d: 
+                break;
+            case SDLK_d:
                 keyRIGHT = true;
-				break;
+                break;
             case SDLK_e:
                 if (ball.isWaitingForKick)
                     break;
@@ -176,13 +178,13 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
                 {
                     break;
                 }
-                if (ball.teamPossessing == this->team)
+                if (ball.owner && ball.owner == this)
                 {
                     ball.passTo(players);
                 }
                 else
                 {
-                    printf("check");
+                    // printf("check");
                     switchMainDot(ball, players);
                 }
                 break;
@@ -220,7 +222,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
                 {
                     break;
                 }
-                if (ball.teamPossessing == this->team)
+                if (!ball.owner && ball.owner == this)
                 {
                     ball.passTo(players);
                 }
@@ -232,26 +234,34 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
             }
         }
     }
-    //If a key was released
-    else if( e.type == SDL_KEYUP && e.key.repeat == 0 )
+    // If a key was released
+    else if (e.type == SDL_KEYUP && e.key.repeat == 0)
     {
-        //Adjust the velocity
+        // Adjust the velocity
         if (playerID == 1)
         {
-            switch( e.key.keysym.sym )
+            switch (e.key.keysym.sym)
             {
-                case SDLK_w: keyUP = false; break;
-                case SDLK_s: keyDOWN = false; break;
-                case SDLK_a: keyLEFT = false; break;
-                case SDLK_d: keyRIGHT = false; break;
-                case SDLK_e:
-                    // if (!ball.isWaitingForKick)
-                    //     break;
-                    speedMultiplier = 1.0;
-                    break;
-                case SDLK_q: // Reset trạng thái chuyển cầu thủ
+            case SDLK_w:
+                keyUP = false;
+                break;
+            case SDLK_s:
+                keyDOWN = false;
+                break;
+            case SDLK_a:
+                keyLEFT = false;
+                break;
+            case SDLK_d:
+                keyRIGHT = false;
+                break;
+            case SDLK_e:
+                // if (!ball.isWaitingForKick)
+                //     break;
+                speedMultiplier = 1.0;
+                break;
+            case SDLK_q: // Reset trạng thái chuyển cầu thủ
 
-                    break;
+                break;
             }
             if (e.key.keysym.sym == SDLK_SPACE && ball.owner != nullptr && ball.owner == this)
             {
@@ -271,6 +281,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
                     ball.shoot(angle, ball.Power);
                 }
             }
+            printf("New Dot 1(After) VelX: %lf, VelY: %lf\n", mVelX, mVelY);
         }
         else if (playerID == 2)
         {
@@ -323,14 +334,20 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
     mVelY = 0;
 
     // Cập nhật vận tốc dựa trên trạng thái phím
-    if (keyUP)    mVelY -= DOT_VEL;
-    if (keyDOWN)  mVelY += DOT_VEL;
-    if (keyLEFT)  mVelX -= DOT_VEL;
-    if (keyRIGHT) mVelX += DOT_VEL;
+    if (keyUP)
+        mVelY -= DOT_VEL;
+    if (keyDOWN)
+        mVelY += DOT_VEL;
+    if (keyLEFT)
+        mVelX -= DOT_VEL;
+    if (keyRIGHT)
+        mVelX += DOT_VEL;
 
     // Giảm vận tốc khi đi chéo
-    if (keyUP || keyDOWN) {
-        if (keyLEFT || keyRIGHT) {
+    if (keyUP || keyDOWN)
+    {
+        if (keyLEFT || keyRIGHT)
+        {
             mVelX = static_cast<int>(mVelX / std::sqrt(2));
             mVelY = static_cast<int>(mVelY / std::sqrt(2));
         }
@@ -413,7 +430,8 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
         {
             return;
         }
-        if (mainDot.keyUP == false && mainDot.keyDOWN == false && mainDot.keyRIGHT == false && mainDot.keyLEFT == false) {
+        if (mainDot.keyUP == false && mainDot.keyDOWN == false && mainDot.keyRIGHT == false && mainDot.keyLEFT == false)
+        {
             return;
         }
         double dx = mainDot.mPosX - mPosX;
@@ -561,6 +579,23 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
     }
 }
 
+void Dot::switchMainDotHelp(Dot *newDot)
+{
+    double oldVelX = this->mVelX;
+    double oldVelY = this->mVelY;
+    printf("New Dot (Before) VelX: %lf, VelY: %lf\n", newDot->mVelX, newDot->mVelY);
+    this->mIsMainDot = false;
+    newDot->mIsMainDot = true;
+    playerID = 0;
+    this->mVelX = 0; // Dừng di chuyển
+    this->mVelY = 0; // Dừng di chuyển
+    newDot->mVelX = oldVelX;
+    newDot->mVelY = oldVelY;
+    newDot->playerID = (this->team == 1 ? 1 : 2);
+    printf("New Dot (After) VelX: %lf, VelY: %lf\n", newDot->mVelX, newDot->mVelY);
+    keyUP = keyDOWN = keyLEFT = keyRIGHT = false;
+}
+
 void Dot::switchMainDot(Ball &ball, std::vector<Dot> &players)
 {
     Dot *closestDot = nullptr;
@@ -578,20 +613,10 @@ void Dot::switchMainDot(Ball &ball, std::vector<Dot> &players)
             closestDot = &dot;
         }
     }
-    double oldVelX = this->mVelX;
-    double oldVelY = this->mVelY;
+
     if (closestDot)
     {
-        // printf("New Dot (Before) VelX: %d, VelY: %d\n", closestDot->mVelX, closestDot->mVelY);
-        mIsMainDot = false;
-        closestDot->mIsMainDot = true;
-        playerID = 0;
-        this->mVelX = 0; // Dừng di chuyển
-        this->mVelY = 0; // Dừng di chuyển
-        closestDot->mVelX = oldVelX;
-        closestDot->mVelY = oldVelY;
-        closestDot->playerID = (this->team == 1 ? 1 : 2);
-        // printf("New Dot (After) VelX: %d, VelY: %d\n", closestDot->mVelX, closestDot->mVelY);
+        this->switchMainDotHelp(closestDot);
     }
 }
 
@@ -616,8 +641,8 @@ void Dot::render(LTexture &gDotTexture)
         }
         else
         {
-            printf("mainCircle is valid!\n");
-            printf("mPosX: %f, mPosY: %f, center.x: %f\n", mPosX, mPosY, center.x);
+            // printf("mainCircle is valid!\n");
+            // printf("mPosX: %f, mPosY: %f, center.x: %f\n", mPosX, mPosY, center.x);
             mainCircle->render(mPosX - (center.x / 2) - 5, mPosY); //,70, 70, NULL, mAngle, &center, SDL_FLIP_NONE); // Tâm của `mainCircle` chính là `mPosX, mPosY`
         }
     }

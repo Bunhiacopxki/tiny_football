@@ -40,7 +40,7 @@ public:
     // void followPlayer(Dot &player);
     void passTo(std::vector<Dot> &players);
     void update(Dot &mainDot, std::vector<Dot> &players); // Cập nhật bóng theo thời gian
-    void takeBall(Dot &mainDot);
+    bool takeBall(Dot &mainDot);
     void shoot(double angle, double power);
     bool getKick() { return isWaitingForKick; };
     bool checkGoal();
@@ -76,7 +76,9 @@ public:
     // thời gian chờ tránh chuyền mà lấy lại ngay
     Uint32 lastPassTime = 0; // Lưu thời điểm bóng được chuyền
     Uint32 lastShootTime = 0;
-
+    Uint32 possessionStartTime = 0; // Thời điểm đội bắt đầu giữ bóng
+    // Uint32 teamPossessionTime = 0;  // Tổng thời gian giữ bóng
+    bool balltaken = false;
     // Dot's collision circle
     Circle mCollider;
 
@@ -100,7 +102,8 @@ Ball::Ball()
     shiftColliders();
 }
 
-void Ball::resetBall(){
+void Ball::resetBall()
+{
     mPosX = SCREEN_WIDTH / 2; // Bóng ở giữa màn hình
     mPosY = SCREEN_HEIGHT / 2;
     isPassing = true;
@@ -181,21 +184,23 @@ Circle &Ball::getCollider()
 // Kiểm tra xem bóng đã vào khung thành chưa
 // Giả sử khung thành bên trái nằm ở phía trái với chiều rộng 50 và chiều cao từ (SCREEN_HEIGHT/2 - 100) đến (SCREEN_HEIGHT/2 + 100)
 // Tương tự, khung thành bên phải nằm ở phía phải
-bool Ball::checkGoal() {
-    int goalWidth = 50;           // Chiều rộng vùng goal (có thể điều chỉnh)
-    int goalTop = SCREEN_HEIGHT/2 - 100;    // Vị trí y trên của khung thành
-    int goalBottom = SCREEN_HEIGHT/2 + 100;   // Vị trí y dưới của khung thành
+bool Ball::checkGoal()
+{
+    int goalWidth = 50;                       // Chiều rộng vùng goal (có thể điều chỉnh)
+    int goalTop = SCREEN_HEIGHT / 2 - 100;    // Vị trí y trên của khung thành
+    int goalBottom = SCREEN_HEIGHT / 2 + 100; // Vị trí y dưới của khung thành
 
     // Kiểm tra khung thành bên trái
-    if(mPosX <= goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom) {
-         return true;
+    if (mPosX <= goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom)
+    {
+        return true;
     }
     // Kiểm tra khung thành bên phải
-    if(mPosX + BALL_WIDTH >= SCREEN_WIDTH - goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom) {
-         return true;
+    if (mPosX + BALL_WIDTH >= SCREEN_WIDTH - goalWidth && mPosY >= goalTop && (mPosY + BALL_HEIGHT) <= goalBottom)
+    {
+        return true;
     }
     return false;
 }
-
 
 #endif
