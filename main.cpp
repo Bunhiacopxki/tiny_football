@@ -440,7 +440,8 @@ int Game::mainGame()
 	int frame_char2 = 0;
 	
 	double Windtime = 5;
-	
+	// int wind = 0;
+
 	changePhase(PHASE_2);
 	gameTimer.start(); // Bắt đầu đếm thời gian
 
@@ -671,6 +672,17 @@ int Game::mainGame()
 		frameCount2++; // Tăng biến đếm
 		// if (frame > 0)
 		// 	printf("frame: %d", frame);
+		// wind render 
+		// if(frameCount1 == 1) wind++;
+		// if(wind > 50) wind = -1*wind;
+		// >10 thì 622, <10 thì 630
+		int x_arrow = (abs(WindSpeed) < 10) ? 630 : 622;
+		if(WindSpeed != 0) renderText(to_string(abs(WindSpeed)),x_arrow, 2);
+		if(WindSpeed < 0) rArrow.render(624,20);
+		else if(WindSpeed > 0) lArrow.render(622,20);
+
+		
+
 		// Ball render
 		ball.render(gBallTexture[frame]);
 		kickMeter.render(gRenderer, ball); // Vẽ thanh lực sút
