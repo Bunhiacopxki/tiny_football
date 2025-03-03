@@ -411,13 +411,13 @@ int Game::mainGame()
 			dots1.push_back(Dot(true, SCREEN_WIDTH / 2 - 175, SCREEN_HEIGHT / 2, 1, 1));
 			mainDot1 = &dots1[i];
 			mainDot1->mainCircle = &circle;
-			dots2.push_back(Dot(true, SCREEN_WIDTH / 2 + 175, SCREEN_HEIGHT / 2, 2, 2));
+			dots2.push_back(Dot(true, SCREEN_WIDTH / 2 + 136, SCREEN_HEIGHT / 2, 2, 2));
 			mainDot2 = &dots2[i];
 			mainDot2->mainCircle = &circle2;
 		}
 		else {		// Others
 			dots1.push_back(Dot(false, SCREEN_WIDTH / 5, position[i - 1], 1, 0));
-			dots2.push_back(Dot(false, 4*SCREEN_WIDTH / 5, position[i - 1], 2, 0));
+			dots2.push_back(Dot(false, 4 * SCREEN_WIDTH / 5 - 39, position[i - 1], 2, 0));
 			dots1[i].mainCircle = &circle;
 			dots2[i].mainCircle = &circle2;
 		}
