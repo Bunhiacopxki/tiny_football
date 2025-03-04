@@ -8,10 +8,6 @@ SRCS = main.cpp LTexture.hpp Dot.hpp Ball.hpp
 OBJS = $(SRCS)
 
 #INCLUDE_PATHS specifies the additional include paths we'll need
-INCLUDE_PATHS = -ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdl\include\SDL2 \
-				-ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sld_image\include\SDL2 \
-				-ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdll_ttf\include\SDL2 \
-				-ID:\HCMUT\HK6\Game_Programing\BTL\Assignment_2\x86_64-w64-mingw32_sdl_mixer\include\SDL2
 INCLUDE_PATHS = -ID:\Monhoc\LTgame\BTL\BTL2\BTL_Game_2\x86_64-w64-mingw32_sdl\include\SDL2 \
 				-ID:\Monhoc\LTgame\BTL\BTL2\BTL_Game_2\x86_64-w64-mingw32_sdl_mixer\include\SDL2 \
 				-ID:\Monhoc\LTgame\BTL\BTL2\BTL_Game_2\x86_64-w64-mingw32_sdll_ttf\include\SDL2 \
