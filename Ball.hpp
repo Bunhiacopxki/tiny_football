@@ -40,7 +40,7 @@ public:
     // void followPlayer(Dot &player);
     void passTo(std::vector<Dot> &players);
     int update(Dot &mainDot, std::vector<Dot> &players, Dot &goalkeeper); // Cập nhật bóng theo thời gian
-    void takeBall(Dot &mainDot);
+    bool takeBall(Dot &mainDot);
     void shoot(double angle, double power);
     bool getKick() { return isWaitingForKick; };
     int checkGoal(Dot &goalkeeper);
@@ -76,7 +76,9 @@ public:
     // thời gian chờ tránh chuyền mà lấy lại ngay
     Uint32 lastPassTime = 0; // Lưu thời điểm bóng được chuyền
     Uint32 lastShootTime = 0;
-
+    Uint32 possessionStartTime = 0; // Thời điểm đội bắt đầu giữ bóng
+    // Uint32 teamPossessionTime = 0;  // Tổng thời gian giữ bóng
+    bool balltaken = false;
     // Dot's collision circle
     Circle mCollider;
 
@@ -100,7 +102,8 @@ Ball::Ball()
     shiftColliders();
 }
 
-void Ball::resetBall(){
+void Ball::resetBall()
+{
     mPosX = SCREEN_WIDTH / 2 - 14; // Bóng ở giữa màn hình
     mPosY = SCREEN_HEIGHT / 2 + 7;
     isPassing = true;
@@ -129,12 +132,12 @@ bool Ball::move()
         mPosX = 0;
         // Đổi dấu vận tốc theo công thức reflection
         // n = (1, 0) => v' = ( -v_x, v_y )
-        mVelX = -mVelX*0.7;
+        mVelX = -mVelX * 0.7;
     }
     else if (mPosX + BALL_WIDTH > SCREEN_WIDTH)
     {
         mPosX = SCREEN_WIDTH - BALL_WIDTH;
-        mVelX = -mVelX*0.7;
+        mVelX = -mVelX * 0.7;
     }
 
     // Kiểm tra va chạm biên theo trục Y
@@ -142,12 +145,12 @@ bool Ball::move()
     {
         mPosY = 0;
         // n = (0, 1) => v' = ( v_x, -v_y )
-        mVelY = -mVelY*0.7;
+        mVelY = -mVelY * 0.7;
     }
     else if (mPosY + BALL_HEIGHT > SCREEN_HEIGHT)
     {
         mPosY = SCREEN_HEIGHT - BALL_HEIGHT;
-        mVelY = -mVelY*0.7;
+        mVelY = -mVelY * 0.7;
     }
 
     // Cập nhật lại collider nếu cần
