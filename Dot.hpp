@@ -409,12 +409,12 @@ void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
     }
     else if (goalkeeper)
     {
-        // if (mPosY < SCREEN_HEIGHT / 2 - 20 * DOT_VEL_SLOW || mPosY > SCREEN_HEIGHT / 2 + 20 * DOT_VEL_SLOW)
-        // {
-        //     mVelY = -mVelY;
-        // }
+        if (mPosY < SCREEN_HEIGHT / 2 - 20 * DOT_VEL_SLOW || mPosY > SCREEN_HEIGHT / 2 + 20 * DOT_VEL_SLOW)
+        {
+            mVelY = -mVelY;
+        }
 
-        // mPosY += mVelY;
+        mPosY += mVelY;
         // Kiểm tra đội nào
         if (team == 1)
         {

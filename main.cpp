@@ -760,7 +760,7 @@ int Game::mainGame()
 			Uint32 currentTime = SDL_GetTicks();
 			if (currentTime - goalDisplayTime < GOAL_DURATION)
 			{
-				SDL_Rect goalRect = {0, SCREEN_HEIGHT / 4, SCREEN_WIDTH, 250};
+				SDL_Rect goalRect = {SCREEN_WIDTH / 5, SCREEN_HEIGHT / 4, SCREEN_WIDTH * 2 / 3, 230};
 				SDL_RenderCopy(gRenderer, goalTexture, NULL, &goalRect);
 			}
 			else
