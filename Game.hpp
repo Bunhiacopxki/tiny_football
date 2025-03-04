@@ -529,7 +529,7 @@ void Game::loadMusic(const std::string &path)
     else
     {
         Mix_PlayMusic(currentMusic, -1); // Phát nhạc lặp vô hạn
-        Mix_VolumeMusic(10);
+        Mix_VolumeMusic(0);
     }
 }
 
