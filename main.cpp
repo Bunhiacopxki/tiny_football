@@ -133,7 +133,7 @@ int Ball::update(Dot &mainDot, std::vector<Dot> &players, Dot &goalkeeper)
 			passedSegments = currentSegment;
 			double factor = 1.0 - (passedSegments * 0.05);
 			factor = std::max(0.05, factor); // Đảm bảo không giảm quá mức
-			mVelX = mVelX * factor + WindSpeed;
+			mVelX = mVelX * factor + WindSpeed * 0.1;
 			mVelY = mVelY * factor;
 		}
 
@@ -156,18 +156,18 @@ int Ball::update(Dot &mainDot, std::vector<Dot> &players, Dot &goalkeeper)
 	{
 		mPosX += mVelX;
 		mPosY += mVelY;
-		mVelX *= 0.95 + WindSpeed;
-		mVelY *= 0.95;
-		if ((fabs(mVelX) < 0.02 && fabs(mVelY) < 0.02))
+		mVelX = ((mVelX + WindSpeed * 0.1) * 0.9); // bug
+		mVelY *= 0.9;
+		if ((fabs(mVelX) < 0.1 && fabs(mVelY) < 0.1))
 		{
 			mVelX = 0;
 			mVelY = 0;
 			isShooting = false;
 		}
-		if (mPosX < 0 || mPosX > SCREEN_WIDTH || mPosY < 0 || mPosY > SCREEN_HEIGHT)
-		{
-			isShooting = false;
-		}
+		// if (mPosX < 0 || mPosX > SCREEN_WIDTH || mPosY < 0 || mPosY > SCREEN_HEIGHT)
+		// {
+		// 	isShooting = false;
+		// }
 	}
 	else
 	{
@@ -509,10 +509,10 @@ int Game::mainGame()
 			int dir = rand();
 			if (dir & 1)
 			{
-				WindSpeed = rand() % 5;
+				WindSpeed = rand() % 2;
 			}
 			else
-				WindSpeed = -rand() % 5;
+				WindSpeed = -rand() % 2;
 			Windtime = 5;
 			// printf("Wind Speed: %d", WindSpeed);
 		}
@@ -625,20 +625,37 @@ int Game::mainGame()
 					RedMark++;
 				}
 			}
+			int goal2 = ball.update(*mainDot2, dots2, goalkeeper1);
+			if (goal2 != 0)
+			{
+				gameReset(ball, dots1, dots2);
+				if (goal2 == 1)
+				{
+					showGoal = true;
+					goalDisplayTime = SDL_GetTicks();
+					BlueMark++;
+				}
+				else if (goal2 == 2)
+				{
+					showGoal = true;
+					goalDisplayTime = SDL_GetTicks();
+					RedMark++;
+				}
+			}
 			// ball.update(*mainDot2, dots2);
-			//     Move the ball
-			//   ball.move();
-			//   Move the ball
-			//  if (ball.isFollowing == 1)
-			//  {
-			//  	ball.follow(*mainDot1);
-			//  }
-			//  else if (ball.isFollowing == 2)
-			//  {
-			//  	ball.follow(*mainDot2);
-			//  }
-			//  else
-			//  	ball.move();
+			//      Move the ball
+			//    ball.move();
+			//    Move the ball
+			//   if (ball.isFollowing == 1)
+			//   {
+			//   	ball.follow(*mainDot1);
+			//   }
+			//   else if (ball.isFollowing == 2)
+			//   {
+			//   	ball.follow(*mainDot2);
+			//   }
+			//   else
+			//   	ball.move();
 		}
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
@@ -747,9 +764,9 @@ int Game::mainGame()
 		int x_arrow = (abs(WindSpeed) < 10) ? 630 : 622;
 		if (WindSpeed != 0)
 			renderText(to_string(abs(WindSpeed)), x_arrow, 2);
-		if (WindSpeed < 0)
+		if (WindSpeed > 0)
 			rArrow.render(624, 20);
-		else if (WindSpeed > 0)
+		else if (WindSpeed < 0)
 			lArrow.render(622, 20);
 
 		// Ball render

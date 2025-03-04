@@ -24,7 +24,8 @@ LIBRARY_PATHS = -LD:\Monhoc\LTgame\BTL\BTL2\BTL_Game_2\x86_64-w64-mingw32_sdl\li
 				-LD:\Monhoc\LTgame\BTL\BTL2\BTL_Game_2\x86_64-w64-mingw32_sld_image\lib
 
 # Compiler flags
-COMPILER_FLAGS = -w -Wl,-subsystem,windows
+#COMPILER_FLAGS = -w -Wl,-subsystem,windows
+COMPILER_FLAGS = -w -mconsole
 
 # Linker flags
 LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer

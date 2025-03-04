@@ -132,12 +132,12 @@ bool Ball::move()
         mPosX = 0;
         // Đổi dấu vận tốc theo công thức reflection
         // n = (1, 0) => v' = ( -v_x, v_y )
-        mVelX = -mVelX * 0.7;
+        mVelX = -mVelX * 0.95;
     }
     else if (mPosX + BALL_WIDTH > SCREEN_WIDTH)
     {
         mPosX = SCREEN_WIDTH - BALL_WIDTH;
-        mVelX = -mVelX * 0.7;
+        mVelX = -mVelX * 0.95;
     }
 
     // Kiểm tra va chạm biên theo trục Y
@@ -145,12 +145,12 @@ bool Ball::move()
     {
         mPosY = 0;
         // n = (0, 1) => v' = ( v_x, -v_y )
-        mVelY = -mVelY * 0.7;
+        mVelY = -mVelY * 0.95;
     }
     else if (mPosY + BALL_HEIGHT > SCREEN_HEIGHT)
     {
         mPosY = SCREEN_HEIGHT - BALL_HEIGHT;
-        mVelY = -mVelY * 0.7;
+        mVelY = -mVelY * 0.95;
     }
 
     // Cập nhật lại collider nếu cần
