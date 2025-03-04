@@ -342,11 +342,13 @@ int Game::showInstructions()
     std::vector<std::string> introText = {
         "Welcome to Tiny Football!",
         "A fast-paced, 2D football game full of action!",
+        "There are two teams: Red and Blue with 5 players each.",
+        "The team with the most goals wins!",
         "Controls:",
-        "Move - Arrow Keys",
-        "Shoot - ?",
-        "Sprint - ?",
-        "Pass/Swap - ?",
+        "Move - AWSD / Arrow Keys",
+        "Shoot - SPACE / 0",
+        "Sprint - E / ",
+        "Pass/Swap - Q / ",
         "Press ESC to return"};
 
     std::vector<LTexture> textTextures(introText.size());

@@ -495,7 +495,7 @@ int Game::mainGame()
 	bool showGoal = false;
 	Uint32 goalDisplayTime = 0;
 	const Uint32 GOAL_DURATION = 2000; // Hiển thị trong 2 giây
-	SDL_Surface *goalSurface = IMG_Load("./img/goal.jpg");
+	SDL_Surface *goalSurface = IMG_Load("./img/goal.png");
 	goalTexture = SDL_CreateTextureFromSurface(gRenderer, goalSurface);
 	SDL_FreeSurface(goalSurface);
 
