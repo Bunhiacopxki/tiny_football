@@ -736,9 +736,9 @@ int Game::mainGame()
 		int rac3 = (10000 - mainDot1->rac2) / 1000;
 		int rac4 = (10000 - mainDot2->rac2) / 1000;
 
-		if (rac3 > 0) renderText(to_string(rac3), 0, 8);
+		if (rac3 > 0 && mainDot1->isCooldown) renderText(to_string(rac3), 0, 8);
 		else renderText("0", 0, 8);
-		if (rac4 > 0) renderText(to_string(rac4), SCREEN_WIDTH - 25, 8);
+		if (rac4 > 0 && mainDot2->isCooldown) renderText(to_string(rac4), SCREEN_WIDTH - 25, 8);
 		else renderText("0", SCREEN_WIDTH - 25, 8);
 
 		// (*mainDot2).render(gDotTexture[frame_char2]);

@@ -31,7 +31,7 @@ public:
     static const int DOT_VEL = 3;
     static const int DOT_VEL_SLOW = 5;
 
-    int rac2;
+    int rac2 = 0;
 
     friend class Ball;
 
