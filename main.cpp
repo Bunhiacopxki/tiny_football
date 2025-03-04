@@ -733,6 +733,14 @@ int Game::mainGame()
 
 		goalkeeper2.render(gDotTexture2[frame_char2]);
 
+		int rac3 = (10000 - mainDot1->rac2) / 1000;
+		int rac4 = (10000 - mainDot2->rac2) / 1000;
+
+		if (rac3 > 0) renderText(to_string(rac3), 0, 8);
+		else renderText("0", 0, 8);
+		if (rac4 > 0) renderText(to_string(rac4), SCREEN_WIDTH - 25, 8);
+		else renderText("0", SCREEN_WIDTH - 25, 8);
+
 		// (*mainDot2).render(gDotTexture[frame_char2]);
 		// for (auto &dot : dots2)
 		// 	dot.render(gDotTexture[frame_char2]);
@@ -777,7 +785,7 @@ int Game::mainGame()
 			Uint32 currentTime = SDL_GetTicks();
 			if (currentTime - goalDisplayTime < GOAL_DURATION)
 			{
-				SDL_Rect goalRect = {0, SCREEN_HEIGHT / 4, SCREEN_WIDTH, 250};
+				SDL_Rect goalRect = {SCREEN_WIDTH / 5, SCREEN_HEIGHT / 4, SCREEN_WIDTH * 2 / 3, 230};
 				SDL_RenderCopy(gRenderer, goalTexture, NULL, &goalRect);
 			}
 			else
