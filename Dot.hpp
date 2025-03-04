@@ -224,7 +224,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
                 {
                     break;
                 }
-                if (!ball.owner && ball.owner == this)
+                if (ball.owner && ball.owner == this)
                 {
                     ball.passTo(players);
                 }
