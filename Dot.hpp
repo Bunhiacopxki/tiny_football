@@ -31,6 +31,8 @@ public:
     static const int DOT_VEL = 3;
     static const int DOT_VEL_SLOW = 5;
 
+    int rac2;
+
     friend class Ball;
 
     double mAngle;
@@ -378,17 +380,17 @@ void Dot::rac()
 
 void Dot::move(Dot &mainDot, std::vector<Dot> &dots, double deltaTime)
 {
+    // Cập nhật vị trí của main dot theo điều khiển
+    Uint32 currentTime = SDL_GetTicks();
     if (mIsMainDot)
     {
-        // Cập nhật vị trí của main dot theo điều khiển
-        Uint32 currentTime = SDL_GetTicks();
-
-        if (isBoosting && currentTime - boostStartTime >= 5000) // Sau 5 giây tắt boost
+        rac2 = currentTime - boostStartTime;
+        if (isBoosting && rac2 >= 5000) // Sau 5 giây tắt boost
         {
             isBoosting = false;
             speedMultiplier = 1.0;
         }
-        if (isCooldown && currentTime - boostStartTime >= 10000) // Sau 5 giây có thể dùng lại
+        if (isCooldown && rac2 >= 10000) // Sau 5 giây có thể dùng lại
         {
             isCooldown = false;
         }
