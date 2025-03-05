@@ -770,12 +770,12 @@ int Game::mainGame()
 		// if(wind > 50) wind = -1*wind;
 		// >10 thì 622, <10 thì 630
 		int x_arrow = (abs(WindSpeed) < 10) ? 630 : 622;
-		if (WindSpeed != 0)
-			renderText(to_string(abs(WindSpeed)), x_arrow, 2);
+		// if (WindSpeed != 0)
+		// 	renderText(to_string(abs(WindSpeed)), x_arrow, 2);
 		if (WindSpeed > 0)
-			rArrow.render(624, 20);
+			rArrow.render(624, 10);
 		else if (WindSpeed < 0)
-			lArrow.render(622, 20);
+			lArrow.render(624, 10);
 
 		// Ball render
 		ball.render(gBallTexture[frame]);

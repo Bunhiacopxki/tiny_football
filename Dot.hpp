@@ -31,7 +31,7 @@ public:
     static const int DOT_VEL = 3;
     static const int DOT_VEL_SLOW = 5;
 
-    int rac2 = 0;
+    int rac2;
 
     friend class Ball;
 
@@ -166,7 +166,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
             case SDLK_d:
                 keyRIGHT = true;
                 break;
-            case SDLK_e:
+            case SDLK_j:
                 if (ball.isWaitingForKick)
                     break;
                 if (!isCooldown)
@@ -177,7 +177,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
                     speedMultiplier = 1.5;
                 }
                 break;
-            case SDLK_q:
+            case SDLK_h:
                 if (ball.isWaitingForKick)
                 {
                     break;
@@ -210,7 +210,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
             case SDLK_RIGHT:
                 keyRIGHT = true;
                 break;
-            case SDLK_RSHIFT:
+            case SDLK_KP_2:
                 if (ball.isWaitingForKick)
                     break;
                 if (!isCooldown)
@@ -221,7 +221,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
                     speedMultiplier = 1.5;
                 }
                 break;
-            case SDLK_0:
+            case SDLK_KP_1:
                 if (ball.isWaitingForKick)
                 {
                     break;
@@ -258,12 +258,12 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
             case SDLK_d:
                 keyRIGHT = false;
                 break;
-            case SDLK_e:
+            case SDLK_j:
                 // if (!ball.isWaitingForKick)
                 //     break;
                 speedMultiplier = 1.0;
                 break;
-            case SDLK_q: // Reset trạng thái chuyển cầu thủ
+            case SDLK_h: // Reset trạng thái chuyển cầu thủ
 
                 break;
             }
@@ -303,16 +303,16 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
             case SDLK_RIGHT:
                 keyRIGHT = false;
                 break;
-            case SDLK_RSHIFT:
+            case SDLK_KP_2:
                 // if (!ball.isWaitingForKick)
                 //     break;
                 speedMultiplier = 1.0;
                 break;
-            case SDLK_0: // Reset trạng thái chuyển cầu thủ
+            case SDLK_KP_1: // Reset trạng thái chuyển cầu thủ
 
                 break;
             }
-            if (e.key.keysym.sym == SDLK_5 && ball.owner != nullptr && ball.owner == this)
+            if (e.key.keysym.sym == SDLK_KP_0 && ball.owner != nullptr && ball.owner == this)
             {
                 if (!ball.isWaitingForKick)
                 {

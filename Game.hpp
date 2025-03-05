@@ -347,8 +347,8 @@ int Game::showInstructions()
         "Controls:",
         "Move - AWSD / Arrow Keys",
         "Shoot - SPACE / 0",
-        "Sprint - E / ",
-        "Pass/Swap - Q / ",
+        "Sprint - J / 1",
+        "Pass/Swap - H / 2",
         "Press ESC to return"};
 
     std::vector<LTexture> textTextures(introText.size());
@@ -529,7 +529,7 @@ void Game::loadMusic(const std::string &path)
     else
     {
         Mix_PlayMusic(currentMusic, -1); // Phát nhạc lặp vô hạn
-        Mix_VolumeMusic(0);
+        Mix_VolumeMusic(50);
     }
 }
 
