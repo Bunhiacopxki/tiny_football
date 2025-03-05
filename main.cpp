@@ -156,7 +156,7 @@ int Ball::update(Dot &mainDot, std::vector<Dot> &players, Dot &goalkeeper)
 	{
 		mPosX += mVelX;
 		mPosY += mVelY;
-		mVelX = (mVelX + WindSpeed * 0.05)*0.85;
+		mVelX = (mVelX + WindSpeed * 0.05)*0.9;
 		mVelY *= 0.9;
 		if ((fabs(mVelX) < 0.1 && fabs(mVelY) < 0.1))
 		{
