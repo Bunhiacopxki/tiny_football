@@ -210,7 +210,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
             case SDLK_RIGHT:
                 keyRIGHT = true;
                 break;
-            case SDLK_KP_2:
+            case SDLK_p:
                 if (ball.isWaitingForKick)
                     break;
                 if (!isCooldown)
@@ -221,7 +221,7 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
                     speedMultiplier = 1.5;
                 }
                 break;
-            case SDLK_KP_1:
+            case SDLK_o:
                 if (ball.isWaitingForKick)
                 {
                     break;
@@ -303,16 +303,16 @@ void Dot::handleEvent(SDL_Event &e, Ball &ball, std::vector<Dot> &players, KickM
             case SDLK_RIGHT:
                 keyRIGHT = false;
                 break;
-            case SDLK_KP_2:
+            case SDLK_p:
                 // if (!ball.isWaitingForKick)
                 //     break;
                 speedMultiplier = 1.0;
                 break;
-            case SDLK_KP_1: // Reset trạng thái chuyển cầu thủ
+            case SDLK_o: // Reset trạng thái chuyển cầu thủ
 
                 break;
             }
-            if (e.key.keysym.sym == SDLK_KP_0 && ball.owner != nullptr && ball.owner == this)
+            if (e.key.keysym.sym == SDLK_RSHIFT && ball.owner != nullptr && ball.owner == this)
             {
                 if (!ball.isWaitingForKick)
                 {
