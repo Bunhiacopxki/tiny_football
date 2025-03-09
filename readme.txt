@@ -1,17 +1,28 @@
-Copyright Notice:
------------------
-The files within this zip file are copyrighted by Lazy Foo' Productions 2004-2024
-and may not be redistributed without written permission.
+# Football Game - README
 
-This project is linked against:
-----------------------------------------
-Windows:
-SDL2
-SDL2main
-SDL2_image
-SDL2_ttf
+## Introduction
+This is a football game that you can compile and run on your system using the terminal.
 
-*nix:
-SDL2
-SDL2_image
-SDL2_ttf
+## Compilation Instructions
+To compile the game, open a terminal in the project directory and enter the following command:
+
+```
+make all
+```
+
+## Running the Game
+After successfully compiling the code, you can run the game by entering:
+
+```
+./game.exe
+```
+
+## Requirements
+- Ensure you have `make` installed on your system.
+- Required dependencies should be installed if necessary.
+
+## Troubleshooting
+- If the compilation fails, check for missing dependencies and ensure `make` is installed.
+- If the game does not run, verify that `game.exe` exists in the directory.
+
+Enjoy the game!
