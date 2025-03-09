@@ -44,7 +44,7 @@ LTimer gameTimer;
 
 int displayTime = 0;
 
-int position[] = {static_cast<int>(SCREEN_HEIGHT / 4),
+const int position[] = {static_cast<int>(SCREEN_HEIGHT / 4),
 				  static_cast<int>(SCREEN_HEIGHT / 2),
 				  static_cast<int>(3 * SCREEN_HEIGHT / 4)};
 

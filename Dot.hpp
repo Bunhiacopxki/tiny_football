@@ -59,7 +59,7 @@ public:
 
     bool isStop();
 
-    void resetDot(int x, int y);
+    void resetDot(double x, double y);
 
     void setGoalKeeper()
     {
@@ -135,7 +135,7 @@ Dot::Dot(bool isMainDot, int x, int y, int team, int playerid)
     mainCircle = nullptr;
 }
 
-void Dot::resetDot(int x, int y)
+void Dot::resetDot(double x, double y)
 {
     mPosX = x;
     mPosY = y;
